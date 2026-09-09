@@ -26,23 +26,25 @@ Four layers, deliberately separated:
 
 Requirements: Claude Code, Git (hooks run under its bundled bash), and a Python ≥ 3.8 interpreter on PATH (`python3`, `python`, or the Windows `py -3` launcher). Node is not required. Pandoc is optional (DOCX/PDF export only; the markdown bundle and EPUB build without it).
 
-This folder is a self-registering marketplace: `.claude-plugin/marketplace.json` declares one plugin, `vellum`, with `source: "."`.
+This repo is a self-registering marketplace: `.claude-plugin/marketplace.json` declares one plugin, `vellum`, with `source: "."`.
 
-**From a local path** (this checkout):
+**From GitHub:**
 
 ```
-claude plugin marketplace add C:/path/to/plugin
-claude plugin install vellum@vellum
+/plugin marketplace add FiredMosquito831/my-writing-companion
+/plugin install vellum@my-writing-companion
+```
+
+(or from a terminal: `claude plugin marketplace add FiredMosquito831/my-writing-companion` then `claude plugin install vellum@my-writing-companion`.)
+
+**From a local clone** (if you've checked the repo out):
+
+```
+claude plugin marketplace add C:/path/to/my-writing-companion
+claude plugin install vellum@my-writing-companion
 ```
 
 (or add the folder through the in-session `/plugin` UI: Add marketplace → paste the path → Install vellum.)
-
-**Via marketplace.json from a git host:** push this folder as its own repository (the marketplace manifest lives at `.claude-plugin/marketplace.json` in the repo root), then:
-
-```
-claude plugin marketplace add <owner>/<repo>
-claude plugin install vellum@vellum
-```
 
 Verify with `/plugin` (vellum should be enabled) — after your next session start, the `/vellum:` commands are available.
 
