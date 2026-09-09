@@ -113,6 +113,12 @@ def check_meridian_vocab():
         # order to check for it - they are not leaks.
         if rel.startswith("scripts/ci/") or rel.startswith(".github/"):
             continue
+        # Design/validation records legitimately discuss the fork's
+        # provenance, including the upstream Meridian coupling and the
+        # model-tier codenames in the tiering tables. Documentation is
+        # not a leak; the vocab gate exists for files that ship to users.
+        if rel in ("DESIGN.md", "VALIDATION.md", "base-analysis.md"):
+            continue
         try:
             text = path.read_text(encoding="utf-8", errors="replace")
         except OSError:
