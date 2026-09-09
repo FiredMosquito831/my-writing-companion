@@ -1,0 +1,5 @@
+# Adapted from design-spec.md section 4.4 (new file, workstream A).
+* text=auto
+*.sh text eol=lf
+*.py text eol=lf
+*.md text eol=lf

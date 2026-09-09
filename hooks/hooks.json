@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {"matcher": "Write|Edit|MultiEdit", "hooks": [{"type": "command",
+        "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/guard-outline-before-prose.sh\""}]},
+      {"matcher": "Bash", "hooks": [{"type": "command",
+        "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/guard-bash-prose-writes.sh\""}]}
+    ],
+    "PostToolUse": [
+      {"matcher": "Write|Edit|MultiEdit", "hooks": [{"type": "command",
+        "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/check-prose-after-write.sh\""}]}
+    ],
+    "SessionStart": [
+      {"matcher": "startup|resume|clear|compact", "hooks": [{"type": "command",
+        "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/session-start.sh\""}]}
+    ],
+    "PreCompact": [{"hooks": [{"type": "command",
+      "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-compact.sh\""}]}],
+    "Stop": [{"hooks": [{"type": "command",
+      "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/session-stop.sh\""}]}],
+    "SubagentStop": [
+      {"matcher": "writer", "hooks": [{"type": "command",
+        "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/chapter-maintenance.sh\""}]}
+    ]
+  }
+}

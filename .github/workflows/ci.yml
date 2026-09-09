@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Validate Claude plugin manifest
+        run: claude plugins validate .claude-plugin/marketplace.json
+
+      - name: Validate vellum plugin (manifest + components)
+        run: claude plugins validate .
+
+      - name: Lint vellum (deep frontmatter validation, Meridian-vocab leaks, attribution headers, hooks.json, size cap)
+        # lint_vellum.py owns the component checks the claude CLI does not run:
+        # agent/skill/command frontmatter (name == filename, model tiering,
+        # description, declared skills exist), plus vocab/headers/size-cap.
+        run: python3 scripts/ci/lint_vellum.py
+
+  tests:
+    uses: ./.github/workflows/tests.yml

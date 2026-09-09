@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+state/.vellum.lock
+*.tmp
+.DS_Store

@@ -1,0 +1,74 @@
+Vellum — notices file
+=====================
+
+This file bundles the license notices of every source listed in ATTRIBUTION.md
+(design-spec.md section 4.3). The base fork retains its Apache-2.0 copyright
+and notice; MIT sources retain their copyright and permission notices; unlicensed
+sources contributed ideas only — no source text or code copied.
+
+1. Apache-2.0 notice for the base
+   - haowjy/creative-writing-skills (the cw/ distribution) — forked 2026-09-09;
+     base commit fd7a3ad9cd7697a0645ff6ff4bd5e809cf7673a3 (v0.5.9, 2026-08-08).
+     Copyright (c) 2026 haowjy. Licensed under the Apache License, Version 2.0
+     (see LICENSE). You may obtain a copy of the License at
+     http://www.apache.org/licenses/LICENSE-2.0.
+   - Velith (agents/beta-reader.md quality-bar, four-reader protocol, readiness
+     gate, shared rubric) — adapted, Apache-2.0. Copyright (c) 2026 Velith
+     contributors. Licensed under the Apache License, Version 2.0.
+
+2. MIT notices for all MIT sources (each: copyright holder + year as stated in
+   the source repo; the MIT permission notice applies to the ported portions):
+   - story-skills (bible schema, promise/question ledger schemas, word rule,
+     continuity CLI contract) — Copyright (c) 2026 Daniel Dewhurst.
+   - oh-story-claudecode (hook logic, portability lessons, transactional state +
+     state card design) — Copyright (c) 2025-2026 oh-story-claudecode.
+   - avoid-ai-writing (detector categories + replacement tables; Python port in
+     prose_core.py / vellum_lib) — Copyright (c) 2026 Conor Bronsdon.
+   - stop-slop (supplemental phrase/structure lists, used only through the
+     fiction-carveouts filter) — Copyright (c) 2025 Hardik Pandya.
+   - claude-ghost-writer (demolition and retune protocols, fiction-tuned
+     adaptation) — Copyright (c) 2026 Simone Di Roma.
+   - fiction-forge (cold-read protocol, reader ledger, prop custody, clock rows)
+     — Copyright (c) 2026 Galleys LLC.
+   - fiction (persona critics, digest/fan-out coordinator) — the source repo
+     publishes no LICENSE file; the MIT claim rests on the "License: MIT" line
+     in its README. Attribution is directionally correct; verbatim voice quotes
+     kept in the ported persona files are used under that claim. Caveat: those
+     persona files also quote the published authors' own words (King, Le Guin,
+     Gay, Wood), and a repo README cannot license the underlying quotations.
+     The verbatim quotes are the weakest link in this distribution's license
+     chain — they are retained as short attributed critical quotations under
+     fair-quotation/criticism use, not under the MIT grant. If you redistribute
+     this plugin under stricter terms or into a commercial product, paraphrase
+     the persona lens prose (ATTRIBUTION.md row 18 documents the provenance).
+   - author-toolkit (landmark beats, signposts, structure map, finding schema)
+     — Copyright (c) 2026 rhavekost.
+   - Novel-OS (Finding.key exemption design, dormant-thread/sagging-middle
+     checks, stall detector) — Copyright (c) 2026 Mriganka Dey.
+
+   The MIT License text:
+     Permission is hereby granted, free of charge, to any person obtaining a
+     copy of this software and associated documentation files (the "Software"),
+     to deal in the Software without restriction, including without limitation
+     the rights to use, copy, modify, merge, publish, distribute, sublicense,
+     and/or sell copies of the Software, and to permit persons to whom the
+     Software is furnished to do so, subject to the following conditions:
+     The above copyright notice and this permission notice shall be included in
+     all copies or substantial portions of the Software.
+     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+     OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+     MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+     IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+     CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+     TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+     SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+3. Ideas-only statement (no license — all rights reserved):
+   - NousResearch/autonovel: "Tier taxonomy and voice-scaffold structure inspired
+     by NousResearch/autonovel." No source text or code copied; word lists
+     re-derived.
+   - book-genesis-v4: blind-read gate and disruptor lane, design-level ideas
+     only where unlicensed.
+   - Claude-Book, Claude-Code-Novel-Writer, GOAT scene cards, Re3/LongWriter,
+     Fablecraft/Scriptorium: architectural inspiration credited; no code or
+     text copied from unlicensed repos.

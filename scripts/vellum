@@ -1,0 +1,9 @@
+#!/usr/bin/env python3
+# Vellum deterministic engine. Original code (base design credited in ATTRIBUTION.md).
+# Python >= 3.8, stdlib only, zero pip dependencies.
+# Always invoked as: "$VELLUM_PY" <root>/scripts/vellum <subcommand> — never relies on the exec bit.
+import os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from vellum_lib.cli import main
+if __name__ == "__main__":
+    sys.exit(main())

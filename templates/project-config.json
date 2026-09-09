@@ -1,0 +1,7 @@
+{
+  "drift_interval": 5,
+  "voice_debt_gate": false,
+  "stop_gate": false,
+  "default_word_target": 3200,
+  "word_band": 0.15
+}
