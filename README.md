@@ -19,7 +19,7 @@ Everything else advisory — and silent when clean.
 
 ---
 
-Vellum is a fork of [`haowjy/creative-writing-skills`](https://github.com/haowjy/creative-writing-skills) (Apache-2.0), rebuilt into a complete novel-writing harness. Every ported mechanism is credited in [ATTRIBUTION.md](ATTRIBUTION.md), the build spec lives in [DESIGN.md](DESIGN.md), and the full validation record — including what we know is still rough — is in [VALIDATION.md](VALIDATION.md).
+Vellum is authored by [FiredMosquito831](https://github.com/FiredMosquito831) — a fork of [`haowjy/creative-writing-skills`](https://github.com/haowjy/creative-writing-skills) (Apache-2.0), rebuilt into a complete novel-writing harness that combines the best verified mechanisms of twenty systems in this space (see [Credits](#-credits--how-vellum-improves-on-them)). Every ported mechanism is credited in [ATTRIBUTION.md](ATTRIBUTION.md), the build spec lives in [DESIGN.md](DESIGN.md), and the full validation record — including what we know is still rough — is in [VALIDATION.md](VALIDATION.md).
 
 ## 🤔 Why Vellum?
 
@@ -170,9 +170,26 @@ New in v0.1.1, beyond the fixes to the eight paper-run findings: the craft layer
 
 The eight paper-run findings from v0.1.0 are resolved — see [VALIDATION.md §4](VALIDATION.md) for the fix record. Notable in v0.1.1: gate-artifact provenance now uses the reader's self-recorded run stamp (with an optional transcript-path binding), single-agent pivotal chapters have a documented author-enabled fallback (`blind_gate_fallback` in `kb/project-config.json`), `project-setup` runs the initial `state rebuild`, and `/vellum:init` gives setup a first-class entry point.
 
-## 🙏 Acknowledgments
+## 🙏 Credits — and how Vellum improves on them
 
-Vellum stands on a lot of shoulders. The base architecture and craft corpus come from [haowjy/creative-writing-skills](https://github.com/haowjy/creative-writing-skills). Grafted mechanisms trace to [danjdewhurst/story-skills](https://github.com/danjdewhurst/story-skills) and [mrigankad/Novel-OS](https://github.com/mrigankad/Novel-OS) (ledgers, exemptions), [zenstory-ai/oh-story-claudecode](https://github.com/zenstory-ai/oh-story-claudecode) (guard hooks, transactional state), [felipelobomotta-blip/book-genesis-v4](https://github.com/felipelobomotta-blip/book-genesis-v4) (the blind-reader gate), [epicsagas/Velith](https://github.com/epicsagas/Velith) (beta-reader gate and quality bar), [geobond13/fiction-forge](https://github.com/geobond13/fiction-forge) (cold-read protocol), [simonediroma/claude-ghost-writer](https://github.com/simonediroma/claude-ghost-writer) (demolition, voice retune), [howells/fiction](https://github.com/howells/fiction) (persona critics), and [conorbronsdon/avoid-ai-writing](https://github.com/conorbronsdon/avoid-ai-writing) with [hardikpandya/stop-slop](https://github.com/hardikpandya/stop-slop) (slop detection). Full provenance per file: [ATTRIBUTION.md](ATTRIBUTION.md).
+Vellum stands on a lot of shoulders. It was built by deep-reading twenty storywriting systems and combining their best verified mechanisms into one coherent, tested architecture — keeping what worked, fixing what didn't. The full design story lives in [ATTRIBUTION.md](ATTRIBUTION.md); the short version:
+
+| Source | We took | Vellum improves by |
+|---|---|---|
+| [haowjy/creative-writing-skills](https://github.com/haowjy/creative-writing-skills) (base, Apache-2.0) | Muse architecture, stance isolation, edit chain, craft corpus | Adding what it lacked: blocking gates, a deterministic engine, tests + CI; removing its private-tool coupling so it runs on stock Claude Code |
+| [danjdewhurst/story-skills](https://github.com/danjdewhurst/story-skills) (MIT) | Bible schema, promise/question ledgers, continuity check catalog | Auto-invoking the checks via hooks (theirs was a standalone CLI), plus prop custody, clock checks, and timeline-scoped knowledge queries |
+| [zenstory-ai/oh-story-claudecode](https://github.com/zenstory-ai/oh-story-claudecode) (MIT) | Guard hooks, transactional state card | Portable English implementation, fail-open gates that can't mis-block you, gate-input forgery protection, Windows + test coverage |
+| [conorbronsdon/avoid-ai-writing](https://github.com/conorbronsdon/avoid-ai-writing) + [hardikpandya/stop-slop](https://github.com/hardikpandya/stop-slop) (MIT) | Detector categories, replacement tables | Fiction carve-outs and a hard law: style bans cap at the author's measured baseline — the net never flattens voice |
+| [simonediroma/claude-ghost-writer](https://github.com/simonediroma/claude-ghost-writer) (MIT) | Demolition protocol, voice retune | Chapter-scoped, logged, declinable demolition; retune inside a full measured-voice lifecycle with drift checks and a falsification test |
+| [epicsagas/Velith](https://github.com/epicsagas/Velith) (Apache-2.0) | Beta-reader gate, quality bar | Readiness thresholds enforced by the engine, with a sha256 export manifest recording which gates passed |
+| [geobond13/fiction-forge](https://github.com/geobond13/fiction-forge) (MIT) | Cold-read protocol, markdown ledgers | Subagent-batched cold reads, and a rolling issue log unified with the first-class exemption system |
+| [howells/fiction](https://github.com/howells/fiction) (MIT) | Persona critics (Wood, King, Le Guin, Gay) | Wiring them into the automated pipeline (theirs were manual summons), bound to a shared rubric so verdicts cite criteria |
+| [rhavekost/author-toolkit](https://github.com/rhavekost/author-toolkit) (MIT) | Weiland/Bell beat map, finding schema | Beats as auditable structure maps wired into planning/audit modes, not just reference reading |
+| [mrigankad/Novel-OS](https://github.com/mrigankad/Novel-OS) (MIT) | Dismissed-findings keying, stall detector | Stdlib Python re-implementation; exemptions re-arm once when the underlying fact changes (entity-hash staleness) |
+| [felipelobomotta-blip/book-genesis-v4](https://github.com/felipelobomotta-blip/book-genesis-v4) (ideas) | The blind-reader gate | A strictly read-only agent inside the plugin with engine cross-checks — not an external CLI |
+| Craft theory: Shawn Coyne, Sanderson/Butcher/Writing Excuses, Gaiman/Craig/MorningStar, BubbleCow/Windrow, Michel/Yang/Brei (ideas only) | Obligatory scenes, try-fail ladders, beta doctrine, revision-letter practice, dialogue stylometry | Original checkable resources implementing the mechanisms — all prose our own, all ideas credited |
+
+License-wise: the base fork's Apache-2.0 copyright is retained; MIT sources keep their notices; unlicensed sources contributed ideas only — no text or code was copied. See [LICENSE](LICENSE), [NOTICE](NOTICE), and [ATTRIBUTION.md](ATTRIBUTION.md).
 
 ## 📄 License
 
