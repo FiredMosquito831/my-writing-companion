@@ -128,7 +128,8 @@ def check_meridian_vocab():
         # provenance, including the upstream Meridian coupling and the
         # model-tier codenames in the tiering tables. Documentation is
         # not a leak; the vocab gate exists for files that ship to users.
-        if rel in ("DESIGN.md", "VALIDATION.md", "base-analysis.md"):
+        if rel in ("DESIGN.md", "VALIDATION.md", "ATTRIBUTION.md",
+                   "base-analysis.md"):
             continue
         try:
             text = path.read_text(encoding="utf-8", errors="replace")
