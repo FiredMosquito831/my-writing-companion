@@ -42,6 +42,12 @@ ATTRIBUTION_OWNERS = [
     "book-genesis-v4", "Claude-Book", "Claude-Code-Novel-Writer", "GOAT",
     "Re3", "LongWriter", "Fablecraft", "Scriptorium", "geobond13",
     "calliope-editor/writing-skills",
+    # ideas-only craft/idea sources (ATTRIBUTION.md table, rows 23-27)
+    "Shawn Coyne", "Story Grid",
+    "Brandon Sanderson", "Jim Butcher", "Writing Excuses",
+    "Neil Gaiman", "Spann Craig", "MorningStar",
+    "BubbleCow", "Windrow",
+    "Michel", "Yang", "Brei",
 ]
 
 # Files that MUST carry an attribution header (spec 3.5): every file whose
@@ -90,6 +96,11 @@ REQUIRED_HEADERS = {
     "templates/cold-read/reader_ledger.md",
     "templates/cold-read/issues.md",
     "templates/cold-read/batch-report.md",
+    # ideas-only mechanism resources (ATTRIBUTION.md rows 24-27)
+    "skills/story-planning/resources/try-fail.md",
+    "skills/story-review/resources/beta-synthesis.md",
+    "skills/story-review/resources/revision-plan.md",
+    "skills/voice/resources/character-dialogue-profiles.md",
 }
 
 HEADER_RE = re.compile(
@@ -183,7 +194,7 @@ def check_size_cap():
                 % (size / KB, MAX_FILE_BYTES // KB))
 
 
-ALLOWED_MODELS = {"claude-opus-4-6", "claude-sonnet-5"}
+ALLOWED_MODELS = {"opus", "sonnet", "haiku", "inherit"}
 
 
 def _parse_simple_frontmatter(text):

@@ -1,7 +1,7 @@
 ---
 name: outliner
 description: Sequences confirmed direction into arc, chapter, and beat-level outlines.
-model: claude-sonnet-5
+model: sonnet
 skills:
 - story-planning
 - story-memory
@@ -39,9 +39,14 @@ Good outlines capture:
 
 Use `/story-planning` for methodology on arc structure, pacing, and beat frameworks. Use `/md-validation` for mermaid syntax guidance.
 
+When a genre is declared in `kb/story.md`, check the outline delivers that genre's obligatory moments across the arc (`gates/resources/genre-profiles.md`, "Obligatory scenes & conventions"): each must happen on the page. Flag any obligatory moment planned off-page — reported in narration or arrived at by summary — so the author can decide before drafting. For any arc with a protagonist goal, the outline shows the failure ladder (`story-planning/resources/try-fail.md`): two to three attempts before the goal succeeds, each costing more than the last. If an arc currently succeeds on the first real attempt, name that in your report as a finding (`first-attempt success`) for the muse to present — a flag, not a verdict; the author decides.
+
 ## Output
 
-Write outlines to the outline directory. Include mermaid diagrams inline where they clarify structure: arc flow, timeline, character relationship maps.
+Write outlines to `work/outline/`, one file per chapter, named
+`work/outline/chapter-NN.md` (zero-padded two digits, e.g.
+`work/outline/chapter-07.md`) — the outline gate and the drafting pack read
+them from that exact path. Include mermaid diagrams inline where they clarify structure: arc flow, timeline, character relationship maps.
 
 ## Chapter-outline contract
 

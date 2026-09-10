@@ -26,6 +26,15 @@ Can you identify the speaker without tags? Each character should have distinct:
 
 Common failure: all characters sound like the same competent, slightly formal narrator. A street kid and a professor should be immediately distinguishable in dialogue.
 
+### Homogenization signal
+
+`vellum style stats --dialogue` reports per-speaker idiolect stats and flags
+pairwise convergence (`voice:dialogue-convergence-<a>-<b>`). When it flags two
+characters converging, quantify the read's ear with the mechanical stats first,
+then confirm (or refute) with the ~70% per-character blind attribution test
+(voice/resources/character-dialogue-profiles.md) before judging — the metric is a
+tripwire, not a verdict, and the measured-profile law outranks the flag.
+
 ### Dialogue Tags and Beats
 
 "Said" is invisible: use it freely. Creative tags ("he exclaimed," "she retorted," "he murmured breathlessly") draw attention to the tag instead of the dialogue. Action beats ("She set the cup down. 'That's not what I meant.'") show how something is said through behavior.

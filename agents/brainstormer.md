@@ -1,7 +1,7 @@
 ---
 name: brainstormer
 description: Creative option generation for a scoped question or angle.
-model: claude-opus-4-6
+model: opus
 skills:
 - story-planning
 - story-memory

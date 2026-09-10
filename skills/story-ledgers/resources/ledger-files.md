@@ -120,6 +120,21 @@ One table; rows are threads. Position/clock rows adapted from `fiction-forge/tem
 
 `ledger check` validates each thread row mechanically: `started` must not be after the row's `last chapter` (a thread running backwards is a finding). The `clock reading` cell is free-form prose the engine does not parse — cross-batch regressions in the reading itself (a countdown growing, a clock slipping backwards between updates) are reader-state drift, which is what the cold read's reader ledger exists to catch.
 
+## Chapter frontmatter — optional `tense:` / `pov-person:` fields
+
+Chapters MAY declare two extra frontmatter fields (template: `templates/chapter.md`):
+
+```yaml
+---
+tense: present        # present | imperfect | perfect-compus | past | ...
+pov-person: third     # first | third
+---
+```
+
+- When a chapter omits a field, the value is inherited from `kb/story.md` frontmatter (`tense:` / `pov-person:` there describe the whole book); the chapter-level field overrides the book-level one.
+- `vellum style stats --morphology` compares each chapter's measured narrative-tense distribution (Romanian verb-morphology heuristics) and narration-person distribution against the declared values, and flags mid-chapter shifts and drift. All findings are report-only advisory (`suggestion` severity, keys `voice:tense-drift`, `voice:person-drift`, `voice:tense-shift`, `voice:person-shift`) — the advisory net never blocks, and the flags are dismissable through the normal exemption protocol.
+- Deliberate tense play (flashback, epistolary inserts, a `trecut` framing chapter) is carved out, not fought: chapter-level via the existing `<!-- voice:skip -->` (hook advisory pass) or per-line with the `tense:skip` valve. See `style-guardrails/resources/structural-caps.md`.
+
 ## `kb/exemptions.json` — dismissed findings
 
 ```json

@@ -20,6 +20,11 @@ Vellum is a fork of [`haowjy/creative-writing-skills`](https://github.com/haowjy
 | `Novel-OS/core/continuity_engine.py` (Finding.key exemption design, dormant-thread/sagging-middle checks) | MIT | Dismissed-findings keying, check catalog, stall detector | Re-implemented in Python, MIT notice |
 | book-genesis-v4 blind-judge/disruptor/audit-gate | various | Blind-read gate, disruptor lane (design-level) | Ideas only where unlicensed; credited in ATTRIBUTION |
 | Claude-Book, Claude-Code-Novel-Writer, GOAT scene cards, Re3/LongWriter, Fablecraft/Scriptorium review mechanisms | various | Architectural ideas (immutable-bible split, hooks suite, word budgets, context recipe, measured voice profile, stdlib runtime policy) | Design-level inspiration, credited; no code/text copied from unlicensed repos |
+| Shawn Coyne, *The Story Grid* (obligatory scenes & conventions concept) | Book — all rights reserved | Obligatory moments + conventions checklists in `skills/gates/resources/genre-profiles.md` | Ideas only; rewritten as original checkable questions; no source text copied |
+| Brandon Sanderson (BYU creative-writing lectures); Jim Butcher (convention-notes essays); Writing Excuses eps. 10.29 / 21.14 | various | Try-fail / failure-ladder mechanism in `skills/story-planning/resources/try-fail.md` | Ideas only; all prose original; no source text copied |
+| Neil Gaiman (reader-feedback maxim, via public citation); Spann Craig (beta-management practice); MorningStar Editing (feedback-triage guidance) | various | Beta-report merge protocol in `skills/story-review/resources/beta-synthesis.md` | Ideas only; all prose original; no source text copied |
+| BubbleCow (Gary Smailes); Windrow (editorial-letter reception doctrine) | various | Cross-source revision-plan mechanism in `skills/story-review/resources/revision-plan.md` | Ideas only; all prose original; no source text copied |
+| Michel et al. 2024; Yang et al. 2024; Brei et al. ACL 2026 (quotation-attribution / speaker-identity stylometry research) | various | Per-character dialogue blind-attribution test in `skills/voice/resources/character-dialogue-profiles.md` | Ideas only; all prose original; no source text copied |
 
 ## Header conventions
 

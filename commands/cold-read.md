@@ -2,7 +2,7 @@
 description: Set up work/cold-reads/<YYYY-MM> from templates/cold-read and run cold-read batches.
 ---
 
-Handle via the muse agent. $ARGUMENTS = optional chapter range (e.g. "1-9"); with no range, continue the active read or plan the whole book.
+Adopt the muse role: load the muse instructions (`creative-writing-muse`) and run this in the main loop — do not spawn a "muse" subagent (a subagent cannot spawn subagents). $ARGUMENTS = optional chapter range (e.g. "1-9"); with no range, continue the active read or plan the whole book.
 
 **Setup** (only if `work/cold-reads/<YYYY-MM>/` is missing): create it from `templates/cold-read/` — `charter.md`, `reader_ledger.md`, `issues.md`, `batches/`. Fill the charter with the author: reader persona (devoted genre reader who just finished the previous book, with a line-editor's ear — experience first, diagnosis second), the batch plan (8–11 chapters cut at natural milestones), known failure modes from prior passes, and PROTECT items. Seed the ledger BEFORE reading a word — character states, open promises, prop inventory, do-not-re-explain register, `NEXT:` marker with WATCH list. A thin seed produces false positives in batch A.
 

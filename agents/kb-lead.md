@@ -1,7 +1,7 @@
 ---
 name: kb-lead
 description: Knowledge-capture worker; writes only under kb/ and runs engine checks after updates.
-model: claude-sonnet-5
+model: sonnet
 skills:
 - story-memory
 - story-ledgers

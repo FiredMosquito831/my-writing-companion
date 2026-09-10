@@ -404,6 +404,19 @@ def write_voice_debt(path, findings, project_root, baseline=None):
             "status": "open",
             "found_at": now_s,
         })
+    # Dedupe by id: rescans can leave duplicate ids (e.g. a chapter renamed
+    # or re-numbered between scans produced the same generated id twice).
+    # Keep the first occurrence (the older record) and drop the rest so
+    # 'debt clear <id>' and the open count stay exact.
+    seen = set()
+    deduped = []
+    for it in items:
+        iid = it.get("id")
+        if iid is None or iid in seen:
+            continue
+        seen.add(iid)
+        deduped.append(it)
+    items = deduped
     doc["items"] = items
     os.makedirs(os.path.dirname(debt_path), exist_ok=True)
     tmp = debt_path + f".tmp-{os.getpid()}"
@@ -414,18 +427,32 @@ def write_voice_debt(path, findings, project_root, baseline=None):
 
 
 def cmd_extract_target():
-    """Read hook JSON from stdin, print tool_input.file_path (or path/filePath)."""
+    """Read hook JSON from stdin, print tool_input.file_path (or path/filePath).
+
+    Fail-open (hooks doctrine: better to miss than mis-block): malformed JSON
+    or a missing path field prints a one-line advisory to stderr and exits 0
+    with no target — the calling guard falls back to its bash extraction, so
+    an unparseable payload must never turn into a hard failure."""
     try:
         data = json.load(sys.stdin)
     except Exception:
-        return 1
+        sys.stderr.write("prose_core: extract-target got malformed JSON on "
+                         "stdin; the caller falls back to bash extraction.\n")
+        return 0
+    if not isinstance(data, dict):
+        sys.stderr.write("prose_core: extract-target got non-object JSON on "
+                         "stdin; the caller falls back to bash extraction.\n")
+        return 0
     ti = data.get("tool_input") or {}
     for key in ("file_path", "path", "filePath"):
         val = ti.get(key)
         if isinstance(val, str) and val.strip():
             sys.stdout.write(val.strip())
             return 0
-    return 1
+    sys.stderr.write("prose_core: extract-target found no file-path field in "
+                     "the payload; the caller falls back to bash "
+                     "extraction.\n")
+    return 0
 
 
 def cmd_scan(args):

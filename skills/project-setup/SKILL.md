@@ -141,12 +141,24 @@ Once approved, create the full §3.7 layout:
 
 12. Write `kb/project-config.json` from `templates/project-config.json`
     (`drift_interval: 5`, `voice_debt_gate: false`, `stop_gate: false`,
-    `default_word_target: 3200`, `word_band: 0.15` — the two extra gates
-    default off so the three hard gates stay exactly three).
+    `blind_gate_fallback: false`, `default_word_target: 3200`,
+    `word_band: 0.15` — the two extra gates default off so the three hard
+    gates stay exactly three, and the gate-2 no-subagent fallback stays
+    author-disabled until the author sets the flag).
 13. Save any writing samples to `kb/samples/`.
 14. If samples were provided and the author wants style analysis, produce
     initial style files in `kb/styles/` and hand the samples to
     `@style-creator`.
+15. **Run the initial state rebuild** — the last setup step, so the first
+    `/vellum:write-chapter` does not trip the chapter-transaction block on
+    missing state files. Resolve the interpreter in order (`python3`,
+    `python`, `py -3`; must be ≥ 3.8) and run
+    `"$PY" scripts/vellum state rebuild` from the project root. Verify
+    `state/_tracking-state.json` and `state/state-card.md` now exist. If
+    no interpreter resolves, tell the author plainly: install Python
+    ≥ 3.8 and run `python scripts/vellum state rebuild` — the outline
+    gate's bash predicate still works without it, but the transactional
+    checks, ledgers, and the state card need the engine.
 
 ## Existing Projects
 

@@ -40,7 +40,7 @@ Vellum replaces wishes with machinery:
 | 🔁 | **One-command chapter loop** | `/vellum:write-chapter` runs outline → approval → draft → critique → acceptance → knowledge capture. Interrupt anywhere; the state card puts you back in one screen. |
 | 🚦 | **Three hard gates, exactly** | Approved outline before prose. A blind-reader verdict on pivotal chapters. A beta-reader PASS before export. Nothing else blocks you. |
 | 🤫 | **Advisory by default** | Prose tells, continuity lints, voice drift — they surface only when they have something to say, and stay silent when clean. |
-| 🎙️ | **Your voice, measured** | Style profiles built from *your* prose samples, with drift detection against a measured baseline. Style bans never override your measured voice. |
+| 🎙️ | **Your voice, measured** | Style profiles built from *your* prose samples, with drift detection against a measured baseline. Per-character dialogue fingerprints catch character voices drifting into one. Style bans never override your measured voice. |
 | 🕵️ | **Readers who can't flatter you** | The blind reader sees your chapter and nothing else — no outline, no plan, no context to be fooled by. The beta reader scores before export; a hard PASS or the export waits. |
 | 🪟 | **Windows-first, dependency-light** | No Node, no pip, no WSL, no build step. Python ≥ 3.8 stdlib only. Tested on `ubuntu-latest` *and* `windows-latest` CI. |
 
@@ -68,7 +68,7 @@ Verify with `/plugin` (vellum should be enabled). After your next session start,
 
 ## 🚀 Quickstart: your first session
 
-1. **Set up the project.** In your novel folder (empty or an existing manuscript), tell Claude: *"Set up my novel project."* The `project-setup` skill interviews you (genre, POV, progress, writing samples), seeds the layout (`manuscript/`, `kb/`, `state/`, `work/`, `export/`), copies the engine and templates in, and closes with a voice-capture interview: 3–5 samples of your own prose become `kb/styles/voice.md` and the measured baseline. Then initialize engine state once: `python scripts/vellum state rebuild` (`python3` or `py -3` on Windows as available).
+1. **Set up the project.** In your novel folder (empty or an existing manuscript), run `/vellum:init` or tell Claude: *"Set up my novel project."* The `project-setup` skill interviews you (genre, POV, progress, writing samples), seeds the layout (`manuscript/`, `kb/`, `state/`, `work/`, `export/`), copies the engine and templates in, closes with a voice-capture interview (3–5 samples of your own prose become `kb/styles/voice.md` and the measured baseline), and finishes by running the initial `state rebuild` for you.
 2. **Check the dashboard.** `/vellum:status` prints the state card, gate statuses, and the resume pointer. From now on, every session starts with the card on screen.
 3. **Write a chapter.** `/vellum:write-chapter next` (or any number). The muse spawns `@outliner` for beats with word quotas and verbatim anchor lines, shows you the outline, and waits. Your approval — `approved: true` in the outline's frontmatter — is what disarms gate 1. Say "pivotal" if the chapter is load-bearing; only you set that flag.
 4. **Draft, critique, accept.** The muse spawns `@writer` with a fixed context pack: state card, scene brief, previous-chapter tail, cast cards, voice profile, word budget. The post-write net scans silently. Critics report; the muse synthesizes; you accept. Pivotal chapters also need the blind reader's verdict before acceptance.
@@ -82,7 +82,7 @@ Exactly three hard gates; everything else is advisory. Each gate reads its artif
 | # | Gate | Enforced by | Blocks | Satisfied by |
 |---|---|---|---|---|
 | 1 | **Approved outline before prose** | PreToolUse hooks on Write/Edit *and* Bash (redirection, heredoc, `sed -i`, copy-laundering all checked) | Any write into `manuscript/chapters/` | `work/outline/chapter-NN.md` with frontmatter `approved: true`, plus `state check` (no half-committed prior chapter, no pending capture). Subagents cannot self-approve outlines or forge critique artifacts. |
-| 2 | **Blind-reader verdict on pivotal chapters** | `state check` at acceptance + `vellum readiness` cross-check | Marking a `pivotal: true` chapter `accepted` | `work/critique-reports/blind-chapter-NN.md` from a real `@blind-reader` run (it sees only the chapter and the previous tail — it has Read and nothing else), verdict ≠ `LOST`, with transcript provenance. |
+| 2 | **Blind-reader verdict on pivotal chapters** | `state check` at acceptance + `vellum readiness` cross-check | Marking a `pivotal: true` chapter `accepted` | `work/critique-reports/blind-chapter-NN.md` from a real `@blind-reader` run (it sees only the chapter and the previous tail — it has Read and nothing else), verdict ≠ `LOST`, with the reader's self-recorded run stamp (or a cited transcript) as provenance. In single-agent mode, the author either drops the pivotal flag or explicitly enables the warned fallback (`blind_gate_fallback: true` in `kb/project-config.json`) — the engine rejects the fallback stamp without it. |
 | 3 | **Beta-reader PASS before export** | `vellum readiness` (required by `/vellum:export`) | Export | `work/critique-reports/readiness-report.md` with `verdict: PASS` — every axis ≥ 7, mean ≥ 7.5, no put-down point in chapters 1–3 — from a real `@beta-reader` run. |
 
 Never-blocking advisory layers: the post-write prose net (AI-tell tiers, hard signals, voice-debt ledger), cold-read BLOCKER-class issues (they block export only until resolved or dismissed with your sign-off), the disruptor lane, the persona panel. Two further gates ship **off** by default — `voice_debt_gate` and `stop_gate` in `kb/project-config.json` — flip them on only if you want a fourth and fifth.
@@ -102,7 +102,7 @@ Four layers, deliberately separated:
 
 - **`agents/`** — 16 agents: muse, outliner, writer, critic, editor, blind-reader, beta-reader, cold-reader, kb-lead, disruptor, style-creator, continuity-checker, character-sim, reader-sim, brainstormer, web-researcher.
 - **`skills/`** — 32 skills, including `story-ledgers`, `gates`, `style-guardrails`, `voice`, `cold-read`, `demolition`, `export`, `kb-integrity`, `project-setup`.
-- **`commands/`** — `/vellum:write-chapter`, `/vellum:status`, `/vellum:cold-read`, `/vellum:retune`, `/vellum:export`, `/vellum:dismiss`.
+- **`commands/`** — `/vellum:init`, `/vellum:write-chapter`, `/vellum:status`, `/vellum:cold-read`, `/vellum:retune`, `/vellum:export`, `/vellum:dismiss`.
 - **`hooks/`** — 7 hook scripts across 6 lifecycle events (details in [`hooks/README.md`](hooks/README.md)).
 - **`templates/`** — the schemas your project is seeded with: chapter frontmatter, ledgers, state card, scene cards, cold-read kit, project config, measured baseline.
 
@@ -162,11 +162,13 @@ Yes. `project-setup` works on existing folders, and the state engine builds its 
 **How is this different from just prompting Claude Code?**
 Prompting asks the model to be consistent. Vellum enforces it: hooks that can't be talked past, a Python engine that checks what code can check, agents whose permissions make contamination impossible, and state that survives context compaction.
 
-## 📈 Status: v0.1.0
+## 📈 Status: v0.1.1
 
-Implemented per [DESIGN.md](DESIGN.md): 16 agents, 32 skills, 6 commands, 7 hooks, the complete stdlib engine, templates, **79 passing tests** on a seeded fixture project, and CI on two operating systems. An end-to-end paper-run exercised every gate, hook, and engine path on Windows.
+Implemented per [DESIGN.md](DESIGN.md): 16 agents, 32 skills, 7 commands (including `/vellum:init`), 7 hooks, the complete stdlib engine, templates, **98 passing tests** on a seeded fixture project, and CI on two operating systems. An end-to-end paper-run exercised every gate, hook, and engine path on Windows.
 
-Known limitations are logged honestly in [VALIDATION.md §4](VALIDATION.md) — eight open findings, all in LLM-side glue/UX rather than the engine. Read it before relying on pivotal-chapter flows in single-agent mode.
+New in v0.1.1, beyond the fixes to the eight paper-run findings: the craft layer grew — an **obligatory scenes & conventions checklist** per genre (Story Grid, ideas-only) that the outliner and beta reader actually check; a **try-fail failure ladder** resource for arc planning and saggy middles; a **revision plan** artifact (`work/revision-plan.md`, with `vellum revision status`) that triages every finding from every review source into one tracked plan; a **beta-synthesis protocol** for when parallel readers disagree; **per-character dialogue profiles** with a blind speaker-attribution test (`style stats --dialogue`); and a **tense/person morphology scan** for Romanian prose in the advisory post-write net (`style stats --morphology` — report-only, carve-out-able). Everything new is advisory; the three gates stayed three. Details and audit record in [VALIDATION.md §5–6](VALIDATION.md).
+
+The eight paper-run findings from v0.1.0 are resolved — see [VALIDATION.md §4](VALIDATION.md) for the fix record. Notable in v0.1.1: gate-artifact provenance now uses the reader's self-recorded run stamp (with an optional transcript-path binding), single-agent pivotal chapters have a documented author-enabled fallback (`blind_gate_fallback` in `kb/project-config.json`), `project-setup` runs the initial `state rebuild`, and `/vellum:init` gives setup a first-class entry point.
 
 ## 🙏 Acknowledgments
 

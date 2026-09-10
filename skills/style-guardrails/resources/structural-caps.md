@@ -60,6 +60,13 @@ These are the numeric and structural thresholds for fiction prose. Some are **ne
 
 - No two chapters end with the same structural move. Each ending belongs to that chapter specifically.
 
+## Tense stability (morphology scan)
+
+- `vellum style stats --morphology` scans Romanian verb morphology per chapter: narrative-tense distribution (present / imperfect / perfect-compus / mai-mult-ca-perfect, via confident verb-ending and auxiliary heuristics) and narration-person distribution (1st- vs 3rd-person markers outside dialogue). It flags mid-chapter tense shifts, narration-person shifts, and drift vs the frontmatter-declared `tense:` / `pov-person:` (inherited from `kb/story.md` when the chapter omits them).
+- The scan is **report-only**: advisory suggestion-severity findings, silent when clean; it never blocks and never auto-edits. Same discipline as tier-1 debt — a flagged shift is fixed, or dismissed through the exemption protocol with the author's words.
+- Deliberate tense moves — flashback, epistolary inserts, letters, a `trecut` framing chapter, italicized memory — are voice, not drift: carve them out with the existing chapter-level `<!-- voice:skip -->` (suppresses tier-1 debt accrual and the morphology scan; the net's tier-1 findings and hard signals still surface) or the per-line `<!-- tense:skip -->` valve placed on each affected line or block. The valve excludes those lines from the scan's denominator rather than counting them as findings.
+- The heuristics are ambiguity-tolerant: unconfident classifications are excluded from the denominator, so a clean report means "nothing clearly drifted", not "the tense is provably uniform". The critic's read stays the instrument for anything the regexes cannot see.
+
 ## Balanced antithesis in dialogue
 
 - "I'm not saying X. I'm saying Y." / "Not X, but Y." / "There's a difference." — if multiple characters share this sentence structure, they are not distinct.

@@ -21,6 +21,13 @@ SEV_RE = re.compile(r"CR-\d+\s*\|[^|]*\|\s*(BLOCKER|MAJOR|MODERATE|MINOR)\s*\|",
                     re.IGNORECASE)
 TRIAGE_NOTE = re.compile(r"\|\s*(fixed|deferred-with-author-signoff|"
                          r"accepted-limitation)\s*\|", re.IGNORECASE)
+# Self-recorded run stamp (v0.1.1 provenance redesign): the reader agent
+# writes this line into its returned report frontmatter at run time —
+# `<agent> <verdict> <YYYY-MM-DD[THH:MM:SSZ]>`, optionally followed by a
+# parenthetical qualifier such as `(single-agent fallback)`.
+RUN_STAMP_RE = re.compile(
+    r"^\s*(?P<agent>[A-Za-z][\w-]*)\s*(?:\([^)]*\))?\s+(?P<verdict>[A-Za-z]+)"
+    r"\s+(?P<at>\d{4}-\d{2}-\d{2})")
 
 
 # ---------------------------------------------------------------------------
@@ -144,37 +151,98 @@ def readiness(root):
     return EXIT_OK
 
 
-def _transcript_problems(root, fm, allowed=("PASS", "REVISE")):
+def _transcript_problems(root, fm, allowed=("PASS", "REVISE"),
+                         agent="beta-reader"):
     """Provenance binding for a gate artifact (spec 10.2 gate provenance).
     Subagents are barred from writing work/critique-reports/ — the muse is
     the artifact's only writer, and it is the agent that wants the gate to
-    pass — so the artifact must cite the subagent transcript it transcribes,
-    and that transcript must exist and carry the verdict. A self-consistent
-    fabricated report with no run behind it fails here instead of passing
-    the gate. Used for the readiness report (PASS|REVISE) and the blind
-    artifacts (ENGAGED|STALLED|LOST)."""
+    pass — so the artifact must carry a provenance record that a real run
+    produced the verdict it transcribes. Two accepted forms, strongest
+    first:
+
+    1. `transcript:` — the subagent transcript path; it must exist and
+       carry the verdict. The muse records it when the path is known
+       (including via the documented transcript search: the newest session
+       transcripts under ~/.claude/projects/<project-slug>/ that carry the
+       verdict line).
+    2. `run_stamp:` — the reader agent's self-recorded run stamp, written
+       into the report frontmatter at run time (`<agent> <verdict>
+       <ISO date>`). The muse transcribes it verbatim like the verdict
+       itself, so inventing it is the same fabrication as inventing the
+       verdict — and unlike a SubagentStop payload, it is guaranteed to
+       reach the conversation that persists the artifact. The single-agent
+       fallback records the same stamp with a `(single-agent fallback)`
+       qualifier — accepted only when the author has enabled the fallback
+       (`blind_gate_fallback: true` in kb/project-config.json); the engine
+       rejects the qualifier without it.
+
+    A self-consistent fabricated report with neither record fails here
+    instead of passing the gate. Used for the readiness report (PASS|REVISE)
+    and the blind artifacts (ENGAGED|STALLED|LOST)."""
     verdict = fm.get("verdict")
     if verdict not in allowed:
         return []  # verdict validity is reported by the verdict checks
     tr = fm.get("transcript")
-    if not isinstance(tr, str) or not tr.strip():
-        return ["transcript provenance missing — frontmatter `transcript:` "
-                "must cite the beta-reader subagent transcript path (the "
-                "muse records it when persisting the report)."]
-    tr = tr.strip().replace("\\", "/")
-    tp = tr if os.path.isabs(tr) else util.project_file(root, *tr.split("/"))
-    if not os.path.isfile(tp):
-        return ["transcript %r does not exist — the report cites no "
-                "beta-reader run." % tr]
-    try:
-        with open(tp, "r", encoding="utf-8", errors="replace") as f:
-            text = f.read()
-    except OSError:
-        return ["transcript %r is unreadable." % tr]
-    if not re.search(r"\b%s\b" % verdict, text):
-        return ["transcript %r contains no %s verdict — the report does not "
-                "match the run it cites." % (tr, verdict)]
-    return []
+    if isinstance(tr, str) and tr.strip():
+        tr = tr.strip().replace("\\", "/")
+        tp = tr if os.path.isabs(tr) else util.project_file(root, *tr.split("/"))
+        if not os.path.isfile(tp):
+            return ["transcript %r does not exist — the report cites no "
+                    "%s run (record the reader's self-recorded run stamp "
+                    "in `run_stamp:` instead, or re-run the reader)."
+                    % (tr, agent)]
+        try:
+            with open(tp, "r", encoding="utf-8", errors="replace") as f:
+                text = f.read()
+        except OSError:
+            return ["transcript %r is unreadable." % tr]
+        if not re.search(r"\b%s\b" % verdict, text):
+            return ["transcript %r contains no %s verdict — the report does "
+                    "not match the run it cites." % (tr, verdict)]
+        return []
+    stamp = fm.get("run_stamp")
+    if isinstance(stamp, str) and stamp.strip():
+        stamp = stamp.strip()
+        m = RUN_STAMP_RE.match(stamp)
+        if not m:
+            return ["run_stamp %r is malformed — expected '<agent> <verdict> "
+                    "<YYYY-MM-DD[THH:MM:SSZ]>' (the %s self-records it at "
+                    "run time; the muse transcribes it verbatim)."
+                    % (stamp, agent)]
+        if agent not in m.group("agent"):
+            return ["run_stamp names %r, but this artifact must cite a %s "
+                    "run." % (m.group("agent"), agent)]
+        if m.group("verdict").upper() != str(verdict).upper():
+            return ["run_stamp verdict %r does not match the report verdict "
+                    "%r — the artifact is internally inconsistent."
+                    % (m.group("verdict"), verdict)]
+        if "single-agent fallback" in stamp:
+            # The (single-agent fallback) qualifier marks weaker, self-attested
+            # provenance (the no-subagent fallback of gate 2): it is author-
+            # enabled at the decision point, not muse-declared — without the
+            # author's flag in kb/project-config.json the artifact fails the
+            # gate instead of passing with a warning.
+            if util.load_config(root).get("blind_gate_fallback") is not True:
+                return ["run_stamp carries the (single-agent fallback) "
+                        "qualifier but the author has not enabled the "
+                        "no-subagent fallback (kb/project-config.json "
+                        "`blind_gate_fallback: true`) — spawn @%s when "
+                        "subagents are available, or ask the author to "
+                        "enable the fallback and re-record the artifact."
+                        % agent]
+            # Flag present: surface the weaker provenance at the gate.
+            sys.stderr.write(
+                "provenance: %s run_stamp carries the single-agent fallback "
+                "qualifier — self-attested by the main session, weaker "
+                "provenance than a verified subagent transcript.\n" % agent)
+        return []
+    return ["transcript provenance missing — cite the %s run behind this "
+            "report: its transcript path (`transcript:`; the muse can find "
+            "it by searching the newest session transcripts under "
+            "~/.claude/projects/ for the verdict line) or the reader's "
+            "self-recorded run stamp (`run_stamp: <agent> <verdict> "
+            "<ISO date>`, transcribed verbatim from the report frontmatter)."
+            % agent]
 
 
 def _blind_verdict(root, num):
@@ -190,15 +258,16 @@ def _blind_verdict(root, num):
 def _blind_transcript_problems(root, num):
     """Provenance binding for the blind artifact itself (same asymmetry as
     the readiness report: muse transcribes blind-chapter-NN.md and wants
-    acceptance, so the artifact must cite the blind-reader subagent
-    transcript that carries the verdict it records)."""
+    acceptance, so the artifact must cite the blind-reader run behind it —
+    transcript path or the reader's self-recorded run stamp)."""
     for pad in ("%02d", "%03d", "%d"):
         p = util.project_file(root, "work", "critique-reports",
                               ("blind-chapter-%s.md" % pad) % num)
         if os.path.exists(p):
             fm, _ = util.strip_frontmatter_text(util.read_file(p))
             return _transcript_problems(
-                root, fm, allowed=("ENGAGED", "STALLED", "LOST"))
+                root, fm, allowed=("ENGAGED", "STALLED", "LOST"),
+                agent="blind-reader")
     return []
 
 

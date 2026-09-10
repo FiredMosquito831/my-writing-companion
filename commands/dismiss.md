@@ -2,7 +2,7 @@
 description: Record an author dismissal of a finding as an exemption (requires the reason in the author own words).
 ---
 
-Handle via the muse agent. $ARGUMENTS = finding key + the author's reason.
+Adopt the muse role: load the muse instructions (`creative-writing-muse`) and run this in the main loop — do not spawn a "muse" subagent (a subagent cannot spawn subagents). $ARGUMENTS = finding key + the author's reason.
 
 Refuse to run unless BOTH are true:
 1. The author, in this conversation, said the finding is intentional — the machine never dismisses on its own judgment, and a stale or inherited dismissal does not count.

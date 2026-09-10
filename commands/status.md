@@ -2,7 +2,7 @@
 description: Print the state card, gate statuses, and open findings summary.
 ---
 
-Handle via the muse agent. Report project status in one screen, no ceremony.
+Adopt the muse role: load the muse instructions (`creative-writing-muse`) and run this in the main loop — do not spawn a "muse" subagent (a subagent cannot spawn subagents). Report project status in one screen, no ceremony.
 
 1. **State card.** Print `state/state-card.md` verbatim if it exists; if missing, run `state rebuild` first (never hand-write it). If no interpreter resolves, say so and rebuild nothing.
 2. **Gate statuses** — read from artifacts on disk only, never from memory:

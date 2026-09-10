@@ -1,7 +1,7 @@
 ---
 name: blind-reader
 description: Naive-eyes verdict on a pivotal chapter; knows nothing of the plan.
-model: claude-opus-4-6
+model: opus
 skills:
 - gates
 tools:
@@ -69,8 +69,15 @@ verdict: ENGAGED      # ENGAGED | STALLED | LOST — the gate reads this field
 put_down_point: none  # location + quote of the first would-stop moment
 axes: {voice: 8, structure: 7, depth: 8, specificity: 8, reader: 8}
 read_at: 2026-09-09
+run_stamp: blind-reader ENGAGED 2026-09-09T14:00:00Z   # self-recorded: <agent> <verdict> <ISO date>
 ---
 ```
+
+The `run_stamp:` line is **yours to write, at run time** — you are the only
+witness of your own read. Record it with your actual verdict and the actual
+date; it is the provenance record `vellum readiness` and `state check`
+verify, and the muse transcribes it verbatim alongside the verdict. Never
+fabricate a stamp for a read you did not run.
 
 Body (prose sections, transcribed verbatim by the muse):
 

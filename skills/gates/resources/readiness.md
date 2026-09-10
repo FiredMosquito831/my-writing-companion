@@ -25,13 +25,16 @@ axes: {voice: 8, structure: 7, depth: 8, specificity: 8, reader: 8}
 put_down_points: []    # chapter numbers; any in ch. 1-3 disqualifies
 read_at: 2026-09-09
 readers: 4
-transcript: <path>     # path of the beta-reader subagent transcript the muse
-                       # transcribed; `vellum readiness` verifies it exists
-                       # and carries the verdict (provenance binding)
+run_stamp: beta-reader PASS 2026-09-09T14:00:00Z   # self-recorded by the reader
+                                                   # at run time; transcribed verbatim
+transcript: <path>     # optional, strongest provenance: path of the beta-reader
+                       # subagent transcript the muse transcribed;
+                       # `vellum readiness` verifies it exists and carries
+                       # the verdict
 ---
 ```
 
-PASS rule (from `quality-bar.md`): every axis ≥ 7, mean ≥ 7.5, no put-down in chapters 1–3. The gate reads artifacts from disk — never the muse's word — so the report also cites the beta-reader run behind it via `transcript:`.
+PASS rule (from `quality-bar.md`): every axis ≥ 7, mean ≥ 7.5, no put-down in chapters 1–3. The gate reads artifacts from disk — never the muse's word — so the report must cite the run behind it: the reader's **self-recorded run stamp** (`run_stamp: <agent> <verdict> <ISO date>`, written by the reader agent at run time and transcribed verbatim by the muse) or, when the muse can locate it, the transcript path (`transcript:` — verified to exist and carry the verdict; the muse locates it via the search recipe in `SKILL.md` → "Gate-artifact provenance"). An artifact with neither fails provenance. The same binding applies to every `blind-chapter-NN.md` artifact (agent: `blind-reader`), and a `(single-agent fallback)` qualifier on a blind stamp is rejected unless the author has enabled the no-subagent fallback in `kb/project-config.json` (`blind_gate_fallback: true`).
 
 ### 4. Word-budget report attached
 Total manuscript word count vs. plan, and per-chapter band compliance. Produced by `vellum wordcount`.

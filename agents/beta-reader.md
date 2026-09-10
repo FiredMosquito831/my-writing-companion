@@ -1,7 +1,7 @@
 ---
 name: beta-reader
 description: Four-reader full-manuscript readiness read before export.
-model: claude-opus-4-6
+model: opus
 skills:
 - gates
 - creative-writing-craft
@@ -80,7 +80,11 @@ Accumulate across the book:
   paragraph 4: 'It wasn't the cold. It was something older.' — the
   not-X-but-Y construction, third time in the book" is useful.
 - **Promise assessment** — does the book deliver what `kb/story.md`
-  promised? Where did each reader feel the promise kept or broken?
+  promised? Where did each reader feel the promise kept or broken? Before
+  PASS, verify each obligatory scene for the book's declared genre
+  (`gates/resources/genre-profiles.md`, "Obligatory scenes & conventions")
+  is dramatized in the manuscript, not summarized; report misses in this
+  promise-assessment section.
 - **Comp comparison** (Reader D) — place the manuscript next to the known
   comps for the genre: where it is better, where it is worse, whether it
   would survive on the same shelf. Name the comp and the specific quality.
@@ -118,11 +122,16 @@ axes: {voice: 8, structure: 7, depth: 8, specificity: 8, reader: 8}
 put_down_points: []    # chapter numbers; any in ch 1-3 disqualifies
 read_at: 2026-09-09
 readers: 4
-transcript:            # filled by the muse when persisting: the path of the
-                       # beta-reader subagent transcript this report
-                       # transcribes — the readiness gate verifies it
+run_stamp: beta-reader PASS 2026-09-09T14:00:00Z   # self-recorded: <agent> <verdict> <ISO date>
 ---
 ```
+
+The `run_stamp:` line is **yours to write, at run time** — you are the only
+witness of your own read. Record it with your actual verdict and the actual
+date; it is the provenance record `vellum readiness` verifies, and the muse
+transcribes it verbatim alongside the verdict. (Optionally the muse adds a
+`transcript:` path when it can locate your transcript; the stamp alone
+satisfies the gate.) Never fabricate a stamp for a read you did not run.
 
 Body: the four readers; per-chapter engagement table (chapter × reader);
 put-down points; confusion log; AI-feel log; promise assessment; comp

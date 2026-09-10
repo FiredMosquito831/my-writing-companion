@@ -57,3 +57,30 @@ When review incorporates reader-sim data:
 
 - `resources/reader-sim-signal.md` — how to interpret and synthesize
   reader-sim output alongside analytical critique.
+
+## From findings to a revision plan
+
+Vellum produces findings in four places (critiques, cold-read issues,
+demolition logs, the beta report) and the reader-sim lane adds a fifth.
+After **any** review program — critique fan-out, cold read, demolition,
+beta read — merge all sources into the revision plan instead of presenting
+raw lists: dedupe across sources, triage into buckets, and let the author
+decide row by row.
+
+- `resources/revision-plan.md` — the `work/revision-plan.md` artifact:
+  append-only rows, triage buckets, the `open | in-progress | resolved |
+  declined` statuses (declined rows carry the author's reason, verbatim —
+  the muse never re-opens one), the intake protocol, and the per-round
+  definition of done. `vellum revision status` cross-checks it (report-only).
+
+## When reader reports conflict
+
+When parallel reader reports disagree (beta four-reader protocol, persona
+panel, reader-sim lane), run the synthesis protocol before weighing
+anything — and never average conflicting verdicts silently:
+
+- `resources/beta-synthesis.md` — strip reader identities, cluster notes by
+  passage, classify each `preference | craft | friction`, apply the
+  frequency rule (singleton preference = declined-by-default; 3-of-n
+  confirms a pattern), and translate every accepted note from symptom to
+  candidate cause for critics to confirm before any edit.

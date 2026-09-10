@@ -2,7 +2,7 @@
 description: Evaluate readiness, then build the export bundle.
 ---
 
-Handle via the muse agent. $ARGUMENTS = optional output directory (default `export/manuscript-<date>`).
+Adopt the muse role: load the muse instructions (`creative-writing-muse`) and run this in the main loop — do not spawn a "muse" subagent (a subagent cannot spawn subagents). $ARGUMENTS = optional output directory (default `export/manuscript-<date>`).
 
 Run the §10.2 sequence in order; stop at the first failed precondition and print the prioritized fix list:
 

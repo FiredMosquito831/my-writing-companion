@@ -381,7 +381,7 @@ prose_gate_block_reason() {
       # Exit 2 per the engine contract: an actual state-check failure. Block,
       # embedding the engine's one-line reason.
       first=$(printf '%s' "$reason" | awk 'NF{print; exit}')
-      printf '%s\n' "Blocked by gate 1 (chapter transaction): ${first:-state check failed} - run the engine close-out with your Python interpreter (python3 / python / py -3 scripts/vellum state rebuild), or the /vellum:write-chapter maintenance, and retry."
+      printf '%s\n' "Blocked by gate 1 (chapter transaction): ${first:-state check failed} - complete the chapter close-out with your Python interpreter (python3 / python / py -3 scripts/vellum state rebuild), or run /vellum:write-chapter, and retry."
       return 0
     elif [ "$rc" -ne 0 ]; then
       # Anything else (missing engine, crash, exit 1): fail open on uncertainty.

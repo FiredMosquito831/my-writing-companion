@@ -1,7 +1,7 @@
 ---
 name: disruptor
 description: Controlled-wildness proposals for flat chapters; proposal-only.
-model: claude-opus-4-6
+model: opus
 skills:
 - creative-writing-craft
 - story-planning

@@ -18,4 +18,4 @@ Modules (spec 5.1/5.2):
 - cli         argparse dispatch
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"

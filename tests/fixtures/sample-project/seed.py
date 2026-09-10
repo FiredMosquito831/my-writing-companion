@@ -229,6 +229,7 @@ def seed(root):
            "| debt-run | ch 3 | day 2 | grows | 1 |\n")
     _write(os.path.join(root, "kb", "project-config.json"), json.dumps(
         {"drift_interval": 5, "voice_debt_gate": False, "stop_gate": False,
+         "blind_gate_fallback": False,
          "default_word_target": 3200, "word_band": 0.15}, indent=2) + "\n")
     _write(os.path.join(root, "kb", "exemptions.json"), json.dumps(
         {"schema_version": 1, "exemptions": []}, indent=2) + "\n")

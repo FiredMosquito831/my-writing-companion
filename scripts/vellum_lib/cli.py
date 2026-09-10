@@ -69,13 +69,26 @@ def build_parser():
                     help="audience-knowledge view (dramatic irony)")
 
     # style stats <file|glob> [--baseline]
+    # `--baseline` is accepted on BOTH the `style` group and the `stats`
+    # action so both argument orders parse: the documented
+    # `style stats <file> --baseline` and the hoisted
+    # `style --baseline stats <file>` (order-insensitive flags, spec 5.2).
+    # Distinct dests; the handler merges them.
     st = sub.add_parser("style", help="style metrics")
+    st.add_argument("--baseline", dest="group_baseline", action="store_true",
+                    help=argparse.SUPPRESS)
     sts = st.add_subparsers(dest="action")
     stats = sts.add_parser("stats", help="sentence stats + per-1k voice profile")
     stats.add_argument("pattern", help="file or glob (e.g. "
                                        "'manuscript/chapters/chapter-*.md')")
-    stats.add_argument("--baseline", action="store_true",
+    stats.add_argument("--baseline", dest="baseline", action="store_true",
                        help="diff against kb/styles/baseline.md")
+    stats.add_argument("--dialogue", action="store_true",
+                       help="per-speaker dialogue stats + pairwise "
+                            "convergence flags (report-only, ADD-5)")
+    stats.add_argument("--morphology", action="store_true",
+                       help="Romanian tense/person morphology scan "
+                            "(report-only, silent when clean, ADD-6)")
 
     # pack chapter-NN
     pack = sub.add_parser("pack", help="deterministic writer context pack")
@@ -96,6 +109,12 @@ def build_parser():
     dsub.add_parser("list", help="list open voice-debt items")
     dclear = dsub.add_parser("clear", help="clear a voice-debt item")
     dclear.add_argument("target", help="item id or 'all'")
+
+    # revision status — revision-plan cross-check (report-only, ADD-3)
+    rev = sub.add_parser("revision", help="revision-plan tools")
+    rsub = rev.add_subparsers(dest="action")
+    rsub.add_parser("status", help="plan summary + stale-resolved "
+                                  "cross-check (report-only)")
 
     # readiness
     sub.add_parser("readiness", help="evaluate the section-10 preconditions")
@@ -149,7 +168,11 @@ def main(argv=None):
         elif args.group == "style":
             if args.action == "stats":
                 from . import style_stats as mod
-                return mod.run(root, args.pattern, baseline=args.baseline)
+                baseline = bool(args.baseline) or bool(
+                    getattr(args, "group_baseline", False))
+                return mod.run(root, args.pattern, baseline=baseline,
+                               dialogue=args.dialogue,
+                               morphology=args.morphology)
         elif args.group == "pack":
             from . import pack as mod
             return mod.run(root, args.chapter)
@@ -163,6 +186,10 @@ def main(argv=None):
                 return mod.debt_list(root)
             if args.action == "clear":
                 return mod.debt_clear(root, args.target)
+        elif args.group == "revision":
+            if args.action == "status":
+                from . import revision as mod
+                return mod.status(root)
         elif args.group == "readiness":
             from . import export as mod
             return mod.readiness(root)

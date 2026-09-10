@@ -2,7 +2,9 @@
 
 **Saggy middle.** The arc's complications aren't actually complicating: they're
 repetitive variations of the same obstacle. Fix by adding a midpoint shift that
-changes the nature of the conflict.
+changes the nature of the conflict. The standard cure is the arc-level failure
+ladder — see `../try-fail.md`: two to three attempts before the arc goal
+succeeds, each costing more than the last.
 
 **Rushed ending.** The resolution doesn't have space to land. Fix by either
 extending the resolution or simplifying what needs resolving.

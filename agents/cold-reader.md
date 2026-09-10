@@ -1,7 +1,7 @@
 ---
 name: cold-reader
 description: Executes one cold-read batch; assessment only, never edits.
-model: claude-sonnet-5
+model: sonnet
 skills:
 - cold-read
 - gates

@@ -8,6 +8,8 @@ characters: []
 mentions: []
 promises-advanced: []
 custody: []
+tense: null
+pov-person: null
 word-target: 3200
 word-count: null
 ---
@@ -22,6 +24,12 @@ word contract). Field semantics:
 - custody: prop ids this chapter holds or moves (ledger check validates each against the
   prop's recorded status — unknown ids, or props whose status is destroyed/lost/resolved,
   are findings)
+- tense / pov-person (optional): narrative tense ("present", "imperfect",
+  "perfect-compus", "past", ...) and narration person ("first", "third") for the
+  morphology scan (`vellum style stats --morphology`, report-only). When null they are
+  inherited from kb/story.md frontmatter. Deliberate tense moves (flashback, epistolary
+  inserts) are carved out per-line with the tense:skip valve — see
+  style-guardrails/resources/structural-caps.md.
 - number is the ordering key; ordering is by frontmatter number, never by filename.
 Example (spec section 7.2): title "The Salt Road", number 7, pov character-mira-tarn,
 characters [character-mira-tarn, character-old-tom], mentions [character-vess],

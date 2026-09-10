@@ -153,7 +153,7 @@ Base skill inventory (the 24 kept dirs, for A's checklist): character-sim, creat
 ---
 name: <agent-name>                    # kebab, matches filename
 description: <one sentence, when-to-use>
-model: claude-opus-4-6 | claude-sonnet-5
+model: opus | sonnet                   # current model aliases (v0.1.1); see the tiering rule below
 skills:
 - <skill-name>                        # agent declares its skill set (base constraint 2)
 tools:
@@ -168,7 +168,7 @@ disallowed-tools:
 <body>
 ```
 
-Rules: read-only critics/critiquers must list `Edit`, `Write` (and where applicable `AskUser`) under `disallowed-tools` and must not list them under `tools`. Model tiering: heavy judgment (muse, writer, critic, editor, style-creator, blind-reader, beta-reader, disruptor) = `claude-opus-4-6`; structure/depth-checks (outliner, continuity-checker, cold-reader, kb-lead, character-sim, reader-sim) = `claude-sonnet-5` (follow each base file's existing tier; new files per this rule).
+Rules: read-only critics/critiquers must list `Edit`, `Write` (and where applicable `AskUser`) under `disallowed-tools` and must not list them under `tools`. Model tiering: heavy judgment (muse, writer, critic, editor, style-creator, blind-reader, beta-reader, disruptor) = `opus`; structure/depth-checks (outliner, continuity-checker, cold-reader, kb-lead, character-sim, reader-sim) = `sonnet` (follow each base file's existing tier; new files per this rule). Shipped v0.1.1: agent frontmatter carries the current model aliases (`opus` / `sonnet`) instead of pinned full IDs, which had become stale aliases that could fail to resolve at install.
 
 ### 3.3 Skill file format
 
@@ -190,7 +190,7 @@ Skills are self-contained (no cross-skill dependencies; a pointer line is allowe
 ---
 description: <one line shown in /help>
 ---
-<prompt body. Address the muse agent: "Spawn/handle via the muse agent...". Use $ARGUMENTS for args.>
+<prompt body. State explicitly that the main loop ADOPTS the muse role (loads the muse instructions and runs as muse) — never "spawn the muse": a subagent cannot spawn subagents, and commands run in the main loop. Use $ARGUMENTS for args.>
 ```
 
 ### 3.5 Attribution header format (CI-checked)
@@ -204,7 +204,7 @@ description: <one line shown in /help>
 
 ### 3.6 Shared finding schema (`gates/resources/finding-schema.md`)
 
-Adapted from `author-toolkit/references/finding-schema.json` (MIT). All critics MAY emit this JSON; muse uses it when merging parallel reports.
+Adapted from `author-toolkit/references/finding-schema.json` (MIT). All critics MAY emit this JSON; muse uses it when merging parallel reports. Optional `signal-class` (v0.1.1, backward-compatible) tags reader-signal findings `preference | craft | friction` per the beta-synthesis protocol (ADD-4); it drives that protocol's frequency rule — a singleton `preference` is declined-by-default, `friction` is always investigated.
 
 ```json
 {
@@ -213,7 +213,8 @@ Adapted from `author-toolkit/references/finding-schema.json` (MIT). All critics 
   "severity": "note|suggestion|warning|blocker",
   "location": {"file": "manuscript/chapters/chapter-07.md", "line": 42, "quote": "…"},
   "issue": "one sentence",
-  "confidence": "deterministic|judgment"
+  "confidence": "deterministic|judgment",
+  "signal-class": "preference|craft|friction"
 }
 ```
 
@@ -245,12 +246,13 @@ export/
   "drift_interval": 5,
   "voice_debt_gate": false,
   "stop_gate": false,
+  "blind_gate_fallback": false,
   "default_word_target": 3200,
   "word_band": 0.15
 }
 ```
 
-`voice_debt_gate` and `stop_gate` default **off** — the three hard gates stay exactly three unless the author opts into more. [JUDGE-FIX: adopts Scriptorium's toxic-debt and Stop gates as opt-in so the default experience keeps the three-gate philosophy.]
+`voice_debt_gate` and `stop_gate` default **off** — the three hard gates stay exactly three unless the author opts into more. `blind_gate_fallback` (default **off**) is the author's enablement of the gate-2 single-agent soft-fail: the engine rejects a `(single-agent fallback)` run stamp unless the author has set it. [JUDGE-FIX: adopts Scriptorium's toxic-debt and Stop gates as opt-in so the default experience keeps the three-gate philosophy.]
 
 ---
 
@@ -262,7 +264,7 @@ Edit from `cw/.claude-plugin/plugin.json`: `name: "vellum"`, `version: "0.1.0"`,
 
 ### 4.2 `.claude-plugin/marketplace.json`
 
-Adapt from `repos/creative-writing-skills/.claude-plugin/marketplace.json`: `name: "vellum"`, metadata version `0.1.0`, plugins[0].name `vellum`, description rewritten, `source: "./vellum"` if the marketplace sits at repo root, else `"."`. Keep owner block.
+Adapt from `repos/creative-writing-skills/.claude-plugin/marketplace.json`: metadata version `0.1.0` (bumped to `0.1.1` with the v0.1.1 release), plugins[0].name `vellum`, description rewritten, `source: "./vellum"` if the marketplace sits at repo root, else `"."`. Keep owner block. **Shipped record (v0.1.1):** the marketplace name is `my-writing-companion` (kept from the base repo's marketplace), so installs resolve as `vellum@my-writing-companion`; the *plugin* name — the one that drives `/vellum:` command prefixes and agent routing — is `vellum`, which is what this spec's `/vellum:` references depend on. Nothing keys off the marketplace name except the install path.
 
 ### 4.3 ATTRIBUTION.md + NOTICE
 
@@ -298,12 +300,13 @@ Reproduce the attribution table below verbatim as the core of `ATTRIBUTION.md` (
 
 For each: copy the `cw/agents/<file>.md`, then apply the edit list. Keep base frontmatter shape (§3.2).
 
-**muse.md** (keep `model: claude-opus-4-6`, skills list; keep tools, ADD `- Bash(python3 scripts/vellum*)`, `- Bash(python scripts/vellum*)`, `- Bash(py -3 scripts/vellum*)`):
+**muse.md** (keep `model: opus`, skills list; keep tools, ADD `- Bash(python3 scripts/vellum*)`, `- Bash(python scripts/vellum*)`, `- Bash(py -3 scripts/vellum*)`):
 1. Replace the `kb-lead` hedge at line ~71 ("where a kb-lead subagent exists") with: knowledge capture routes to `@kb-lead` (shipped).
 2. New section "**Own the Gates**": muse enforces the three blocking gates and *never* marks them satisfied on its own judgment — only from artifacts on disk (`state/_tracking-state.json` for outline acceptance, `work/critique-reports/blind-chapter-NN.md` verdict ≠ `LOST` for pivotal acceptance, `work/critique-reports/readiness-report.md` `verdict: PASS` for export). Muse may *propose* a chapter be flagged pivotal; only the author's approval at outline-acceptance sets `pivotal: true` in the outline frontmatter. [JUDGE-FIX: pivotal flagging is author-approved, not muse-judged.]
 3. New section "**Dismissal routing**": when the author says a finding is intentional, muse runs `"$PY" scripts/vellum dismiss <key> --reason "<author words, verbatim>"` and never re-raises it. Muse never runs `dismiss` without the author's explicit word.
 4. New section "**Ground truth**" (GR-09): precedence user > manuscript prose > outline > state > derived metrics. When state and prose disagree: surface, never silently fix.
 5. New section "**Offer demolition before final**": before marking a chapter `final`, muse offers one demolition pass (`/vellum` demolition skill); author may decline; declining is recorded in one line in the chapter's Demolition Log section. [JUDGE-FIX: demolition almost never runs if author-invoked only.]
+6. Shipped v0.1.1 additions: a "**Revision-plan merge**" duty — after any review program, merge all findings into `work/revision-plan.md` (the muse never re-opens a `declined` row) instead of presenting raw lists; and a "**Conflicting reader reports**" duty — run the beta-synthesis protocol (ADD-4) when reader reports disagree; the muse never averages conflicting verdicts silently.
 
 **writer.md** (opus; keep existing disallowed git tools): add contract line: "Write only under `manuscript/` and `work/`; never `kb/` or `state/`." Add skills entries `style-guardrails`, `voice`. Add note: the spawn prompt always carries the fixed context recipe (§9 of this spec); fill chapter frontmatter completely (`characters`, `mentions`, `promises-advanced`) — the maintenance pass derives what it can and flags the rest. [JUDGE-FIX: addresses "state rebuild quietly goes blind if writer skips frontmatter."]
 
@@ -315,13 +318,13 @@ For each: copy the `cw/agents/<file>.md`, then apply the edit list. Keep base fr
 
 ### 4.6 Edited base skills (A)
 
-**story-planning**: fix the broken resource list (lines 13–15 must point at the real files: `resources/creative-direction.md`, `resources/brainstorming.md`, `resources/story-architecture.md` — check actual names on disk and point each bullet at the file it describes). Add two resources:
+**story-planning**: fix the broken resource list (lines 13–15 must point at the real files: `resources/creative-direction.md`, `resources/brainstorming.md`, `resources/story-architecture.md` — check actual names on disk and point each bullet at the file it describes). Shipped v0.1.1 addition: `resources/try-fail.md` (ADD-2; Sanderson/Butcher/Writing Excuses ideas-only) — the arc-level failure ladder: 2–3 attempts before the arc goal succeeds, each costing more than the last; barrier vs attempt; the standard cure for the saggy middle (`structural-problems.md` diagnoses, `try-fail.md` prescribes); `@outliner` must show the ladder for any protagonist-goal arc, and a critic diagnostic asks whether the protagonist succeeded on the first real attempt. Add two resources:
 - `resources/structure-beats.md` — Adapted from `author-toolkit/skills/story-structure/references/landmark-beats.md`, `signposts.md`, `structure-map.md` (MIT): K.M. Weiland 10-beat map + James Scott Bell 14 signposts with percentage positions; each beat annotated with the word-quota convention.
 - `resources/scene-cards.md` — written fresh (GOAT-Storytelling-Agent scene card concept, credited ideas-only): 9 fields — Characters, Place, Time, Event, Conflict, Story value, Value charge, Mood, Outcome — plus a template block. Add SKILL.md bullets loading both.
 
 **writing-staffing**: add dispatch entries (each states what the spawned agent may/may not read): `@blind-reader` (pivotal chapters only; prompt = chapter prose + previous-chapter tail + quality-bar axes, NOTHING else — no outline, no kb); `@beta-reader` (pre-export; may read kb/story.md + genre file + full manuscript first; outlines/style/critiques only after first read); `@cold-reader` (batch assignment; charter + ledger + last 40 issues + batch's chapters); `@kb-lead` (fact extraction + ledger capture at chapter acceptance, replacing the muse's apply-it-yourself fallback); `@disruptor` (proposal-only; author opts in for flat chapters; never writes). Add **context packs** section: when assembling a writer prompt, rank candidate context by relevance (cast, referenced facts, vocab) and cap total; `vellum pack chapter-NN` does the deterministic part. Add **stall detection** (mechanism from Novel-OS sagging-middle detector, credited): protagonist reactive for 3 consecutive chapters + zero movement in state-card `Story position`/cast lines → muse proposes a structural intervention.
 
-**story-review**: add `resources/prose-critique/personas/{wood,king,leguin,gay}.md` — Adapted from `fiction/agents/{james-wood,stephen-king,ursula-le-guin,roxane-gay}.md` (MIT), each trimmed to critical lens + method + tone (≤ 60 lines each). SKILL.md gains a "Persona panel" section: muse fans out `@critic` with `focus: persona:<name>` for milestone chapters; personas critique execution, not premise (base rule). Add header comment to `resources/prose-critique/analyze.py`: `# SUPERSEDED by 'vellum style stats' — kept for backward compatibility only; do not extend.`
+**story-review**: add `resources/prose-critique/personas/{wood,king,leguin,gay}.md` — Adapted from `fiction/agents/{james-wood,stephen-king,ursula-le-guin,roxane-gay}.md` (MIT), each trimmed to critical lens + method + tone (≤ 60 lines each). SKILL.md gains a "Persona panel" section: muse fans out `@critic` with `focus: persona:<name>` for milestone chapters; personas critique execution, not premise (base rule). Add header comment to `resources/prose-critique/analyze.py`: `# SUPERSEDED by 'vellum style stats' — kept for backward compatibility only; do not extend.` Shipped v0.1.1 additions (ADD-3/ADD-4): `resources/revision-plan.md` — the `work/revision-plan.md` cross-source revision artifact (append-only triaged rows, per-round definition of done, intake protocol; `vellum revision status` cross-checks it, report-only); `resources/beta-synthesis.md` — the conflict protocol for parallel reader reports (cluster by passage, classify `preference | craft | friction`, frequency rule, symptom→candidate-cause translation; never average conflicting verdicts silently).
 
 **project-setup**: extend the Create-the-Files step: create the full §3.7 layout; copy `templates/` into the project; write `kb/story.md` with `schema-version: 2` (adapted from `story-skills/docs/schema-v2.md`); create `kb/styles/voice.md` from the voice template; run `git init` + write `.gitattributes` (`*.md text eol=lf`, `*.sh text eol=lf`); record chapter word-target conventions; run the **voice-capture interview** (collect 3–5 author samples → `kb/samples/` → hand to `@style-creator`); tell the author the three gates in one paragraph; write `kb/project-config.json`. Also add two optional craft resources (see §8.4) to the interview's "what to load" list.
 
@@ -370,10 +373,11 @@ Header: `# Vellum deterministic engine. Original code (base design credited in A
 | `ledger check` | Deterministic continuity (catalog adapted from `story-skills` revision-continuity contract + `Novel-OS/core/continuity_engine.py`, MIT): dead-character reappearances (character `status: deceased` + `died-in` vs chapter `characters:` lists; `mentions:` exempt); promise ordering (`planted-in` ≤ `reinforced` < `payoff-in`; unfired setups past `target-by`; dormant promises > 3 chapters); question states; POV-not-in-cast (chapter `pov:` must appear in `characters:`); **frontmatter completeness** — missing `characters`/`mentions`/`promises-advanced`/`pov` on any chapter with ≥ 200 words → finding `frontmatter:incomplete` (fails loud, never silently passes) [JUDGE-FIX]; prop custody vs `custody:` owner/location; knowledge `learned-in`/`holders` vs chapters where the character uses the fact (see `knowledge`); clock-table monotonicity within a thread; outline-verbatim lines present in accepted chapters. |
 | `knowledge <character-id> --as-of N` | Queryable knowledge backend [JUDGE-FIX, from Scriptorium]: prints the facts the character holds as of chapter N with certainty levels; `--audience` flag gives audience-knowledge view for dramatic-irony checks. Feeds `ledger check`: using a fact in a chapter before its `learned-in` is a hard error. |
 | `bible validate` / `reindex` / `links` | Frontmatter schema validation for every kb entity (§3.7 schemas); kebab-case ids; rebuild `_index.md` registries deterministically; cross-reference integrity (broken id references = findings). Port of the story-skills CLI contract, adapted to our layout. |
-| `style stats <file\|glob> [--baseline]` | Sentence-length distribution + variance (burstiness), opener variety, dialogue ratio, em-dash density, type-token ratio, paragraph-shape entropy. `--baseline` compares to `kb/styles/baseline.md` (keyed numeric profile, §8.2) and appends a drift report section. Also computes the **measured per-1k voice profile** (§8.2). |
+| `style stats <file\|glob> [--baseline] [--dialogue] [--morphology]` | Sentence-length distribution + variance (burstiness), opener variety, dialogue ratio, em-dash density, type-token ratio, paragraph-shape entropy. `--baseline` compares to `kb/styles/baseline.md` (keyed numeric profile, §8.2) and appends a drift report section. Also computes the **measured per-1k voice profile** (§8.2). `--baseline` parses on both the `style` group and the `stats` action (either argument order). Shipped v0.1.1 additions (both report-only): `--dialogue` — per-speaker dialogue stats (mean sentence length, TTR, top idiolect tokens; speaker attribution via nearest-narration heuristics; ambiguous lines excluded and reported as unattributed count) + pairwise-convergence flags for homogenization review (ADD-5); `--morphology` — Romanian tense/person morphology scan (narrative-tense distribution, narration-person distribution, drift vs frontmatter `tense:`/`pov-person:`, mid-chapter shifts; ambiguity-tolerant, stdlib regex) (ADD-6). |
 | `pack chapter-NN` | Assemble the deterministic half of the writer context pack: state card, scene brief path, previous-chapter tail (last ~500–800 words), cast cards for `characters:`, relevant vocab sections, ledger anchors ranked by referenced entities. Emits a path list + inlined small files (JSON to stdout: `{paths: […], inline: {…}}`). |
 | `dismiss <key> --reason "…"` | Append `{key, reason, dismissed_at, chapter, status: "active"}` to `kb/exemptions.json`. Refuses if key exists active. |
 | `debt list` / `debt clear <id\|all>` | Voice-debt accounting [JUDGE-FIX, from Scriptorium]: reads `work/voice-debt.json` (written by the post-write hook). `state check` consults it when `voice_debt_gate: true`. |
+| `revision status` | Cross-check of `work/revision-plan.md` against the source artifacts findings came from (ADD-3): a row marked `resolved` whose source finding is still active is reported stale; a `declined` row without the author's verbatim reason is reported as a finding. **Report-only; not a gate.** |
 | `readiness` | Evaluates §10 preconditions; prints PASS or a prioritized missing list. |
 | `export build --out <dir> [--epub]` | Deterministic assembly (§10.2): joined chapters, title page, manifest with sha256 checksums + gate provenance; `--epub` builds a stdlib-zipfile EPUB with a stable identifier (`book-uuid` from `kb/story.md`) so highlights survive rebuilds [JUDGE-FIX: removes pandoc from the critical path; pandoc remains optional for DOCX/PDF]. |
 
@@ -424,11 +428,11 @@ Each script: `#!/bin/bash` + attribution header (port credit to oh-story) + `set
 |---|---|---|
 | `guard-outline-before-prose.sh` | PreToolUse Write/Edit/MultiEdit | Read stdin JSON; extract `tool_input.file_path` (pipe to `prose_core.py extract-target`; **pure-bash fallback**: `grep`/`sed` for `"file_path"\s*:\s*"..."`). Normalize path. If target NOT under `manuscript/chapters/` → exit 0. Else check: (1) `work/outline/chapter-NN.md` exists and frontmatter `approved: true` (bash grep; two-digit NN from the target filename); (2) if `vellum_py` resolves: `"$VELLUM_PY" scripts/vellum state check` exit 0 (else print one advisory line to stderr and continue — the bash predicate still gates); (3) rewriting an existing `draft` chapter re-checks only (2). Parse failure or target ambiguity → exit 0 (fail-open). On block: exit 2, stderr = exactly one sentence naming the missing precondition + the exact command to satisfy it. **BLOCKING — gate 1.** |
 | `guard-bash-prose-writes.sh` | PreToolUse Bash | Same stdin; scan `tool_input.command` for redirection/heredoc/tee/cp/mv writing into `manuscript/chapters/` (pattern list from oh-story's Bash-guard concept). If found, run the same predicate as the Write guard for the detected target. **Outline-copy detector**: target is a new chapter file while a prior chapter of near-identical byte size exists → run `diff` similarity; > 90 % shared lines → block. Uncertain → exit 0. **BLOCKING — gate 1, alternate path.** |
-| `check-prose-after-write.sh` | PostToolUse Write/Edit/MultiEdit | Only for `manuscript/chapters/*.md`. Hard signals: truncation markers, model-refusal phrases, placeholder text (`[TODO`, `[INVENTED]` flagged if left in an `accepted` chapter), engineering words in prose, `[VERIFY]` remnants ("extract to kb questions before acceptance"). Then engine path: `prose_core.py scan <file>` (tier-1 banned words, tier-2 cluster heuristic, em-dash density, near-verbatim duplicated line check — patterns ported from `avoid-ai-writing/detector/patterns.js` fiction subset + autonovel tier tables *as re-derived data*). Bash fallback: `grep -n` tier-1 table embedded in `prose_core.py --emit-grep`. Output: PostToolUse additionalContext JSON, one line per finding. **Advisory, exit 0 always; silent when clean.** Writes/updates `work/voice-debt.json` (open tier-1 hits with ids) for the debt accounting. `<!-- voice:skip -->` anywhere in the chapter suppresses tier-1 debt accrual for that chapter (author escape hatch). |
+| `check-prose-after-write.sh` | PostToolUse Write/Edit/MultiEdit | Only for `manuscript/chapters/*.md`. Hard signals: truncation markers, model-refusal phrases, placeholder text (`[TODO`, `[INVENTED]` flagged if left in an `accepted` chapter), engineering words in prose, `[VERIFY]` remnants ("extract to kb questions before acceptance"). Then engine path: `prose_core.py scan <file>` (tier-1 banned words, tier-2 cluster heuristic, em-dash density, near-verbatim duplicated line check — patterns ported from `avoid-ai-writing/detector/patterns.js` fiction subset + autonovel tier tables *as re-derived data*). Bash fallback: `grep -n` tier-1 table embedded in `prose_core.py --emit-grep`. Output: PostToolUse additionalContext JSON, one line per finding. **Advisory, exit 0 always; silent when clean.** Writes/updates `work/voice-debt.json` (open tier-1 hits with ids) for the debt accounting. `<!-- voice:skip -->` anywhere in the chapter suppresses tier-1 debt accrual for that chapter (author escape hatch). When the edit leaves the chapter at `status: accepted`/`final`, this hook **fires the mechanical chapter close-out** (`"$VELLUM_PY" scripts/vellum wordcount --write && ledger check && state rebuild`) — the transaction runs at acceptance. Shipped v0.1.1: the advisory pass also runs the tense/person morphology scan (`style stats <file> --morphology`, ADD-6) — report-only suggestion-severity JSON lines, no exit-code change, silent when clean; suppressed by a chapter-level `voice:skip` and honored per-line via the `<!-- tense:skip -->` valve (see `structural-caps.md`). |
 | `session-start.sh` | SessionStart | If `state/state-card.md` exists: print card + last 5 `work/` issue lines + pending `[VERIFY]` count + resume pointer (current chapter, its outline status). Else: one line suggesting `/vellum:status`. Advisory. |
 | `pre-compact.sh` | PreCompact | Copy `state/state-card.md`, ledger `_index` heads, current chapter path, last 40 lines of the active issue log → `work/snapshots/compact-<timestamp>/`. No git operations. Silent on success. |
 | `session-stop.sh` | Stop | If `state/_tracking-state.json` has `pending_capture: true` → one reminder line naming the close-out command; else silent. If `kb/project-config.json` `stop_gate: true`: also run the post-write hard-signal scan on the current chapter and emit a block on truncation/refusal markers only (documented opt-in fourth gate). Default config = never blocks. |
-| `chapter-maintenance.sh` | SubagentStop matcher `writer` | Runs the mechanical close-out itself: `"$VELLUM_PY" scripts/vellum wordcount --write && ledger check && state rebuild`. Success → **silent** (sets `pending_capture: false`; muse still does LLM-side fact extraction via `@kb-lead` — this hook is the mechanical half of the transaction). Failure → print failing check + fix direction as the SubagentStop message (stdout goes to transcript; hence silent-on-success is mandatory). Missing interpreter → bash wordcount + advisory line. |
+| `chapter-maintenance.sh` | SubagentStop matcher `writer` | **Advisory writer-stop pre-pass** (not the close-out): runs `"$VELLUM_PY" scripts/vellum wordcount --write && ledger check && state rebuild` against the chapter the writer actually touched (identified from the SubagentStop transcript; fallback: highest-numbered chapter), so the state card never goes stale between drafting sessions. Success → **silent**. Failure → print failing check + fix direction as the SubagentStop message (stdout goes to transcript; hence silent-on-success is mandatory). Missing interpreter or broken engine → bash wordcount + honest advisory line. `pending_capture` is **derived from chapter status by `state rebuild` on every run** — no hook clears it; the mechanical close-out that completes the acceptance transaction fires from `check-prose-after-write.sh` when an edit leaves the chapter at `status: accepted`/`final` (see §13 / `write-time-capture.md`). |
 
 ### 6.3 `prose_core.py`
 
@@ -467,6 +471,8 @@ pov: character-mira-tarn
 characters: [character-mira-tarn, character-old-tom]   # present in-scene
 mentions: [character-vess]                              # referenced/remembered/dead — no continuity error
 promises-advanced: [promise-ring-of-oath]
+tense: present            # optional; inherited from kb/story.md when null (ADD-6)
+pov-person: third         # optional; inherited from kb/story.md when null (ADD-6)
 word-target: 3200
 word-count: 3148
 ---
@@ -594,7 +600,7 @@ Trigger: "muse before accepting a pivotal chapter, before export, any scoring ta
 - `resources/quality-bar.md` — shared 5-axis rubric (voice, structure, depth, specificity, reader), 1–10 with anchors (adapted from `Velith/agents/beta-reader.md` quality-bar, Apache-2.0). All agents reference this file; never restate the axes. Adds per-gate verdict contracts [JUDGE-FIX]: each gate's PASS / REVISE / ESCALATE criteria written as a table (blind: `ENGAGED|STALLED|LOST`; beta: PASS rule below; critic: what severity blocks acceptance vs notes).
 - `resources/readiness.md` — the §10 preconditions as a checklist muse can evaluate.
 - `resources/finding-schema.md` — §3.6 schema with examples.
-- `resources/genre-profiles.md` [JUDGE-FIX, from Fablecraft] — numeric genre truth agents reference, never restate: chapter-length norms, dialogue-ratio bands, scene-length norms per genre (fantasy/thriller/mystery/romance/horror/litfic — aligning with `creative-writing-craft/resources/genre/*`). `style stats` and `wordcount` findings cite it.
+- `resources/genre-profiles.md` [JUDGE-FIX, from Fablecraft] — numeric genre truth agents reference, never restate: chapter-length norms, dialogue-ratio bands, scene-length norms per genre (fantasy/thriller/mystery/romance/horror/litfic — aligning with `creative-writing-craft/resources/genre/*`). `style stats` and `wordcount` findings cite it. Shipped v0.1.1: an **Obligatory scenes & conventions** section per genre (mechanism credited to Shawn Coyne, *The Story Grid* — ideas only, rewritten as checkable questions; ADD-1); `@outliner` checks arc outlines deliver the genre's obligatory moments, `@beta-reader` verifies they are dramatized before PASS.
 
 ---
 
@@ -616,6 +622,7 @@ Trigger: "project-setup voice capture; every `drift_interval` chapters; author s
 - `resources/voice-profile.md` [JUDGE-FIX, from Fablecraft] — the **measured per-1k voice profile**: `vellum style stats` emits per-1k rates (em-dashes, hedges, tier-1/tier-2 hits, dialogue ratio, TTR, burstiness) into `kb/styles/baseline.md` as a numeric table; **bidirectional diff**: drift reports list both over-shoot (subtraction needed) and under-shoot vs the author's own rates (restoration needed — "you cannot edit toward a voice you haven't measured"); author-measured rates override tier bans (cross-links §8.1 law).
 - `resources/blind-tag-test.md` [JUDGE-FIX, from Fablecraft] — falsifiable check that voice capture worked: shuffle author-corpus passages with manuscript passages, tags stripped; a fresh `@critic` (no project context) sorts them; < 75 % correct attribution = voice capture failed, redo exemplars.
 - `resources/drift-check.md` — mechanical pass (`style stats --baseline`) + LLM pass (style-creator vs exemplar/anti-exemplar fork). Every `drift_interval` chapters or on demand.
+- `resources/character-dialogue-profiles.md` (v0.1.1, ADD-5) — per-character dialogue fingerprint: an optional `dialogue profile` body section on `kb/characters/<id>.md` (idiolect markers, preferred deflections, sentence-length signature, lexical tics) drafted by `@character-sim` at page creation; plus the per-character analog of the blind-tag test — strip attribution from a mixed-character scene batch, a project-naive `@critic` names the speaker; below ~70% correct attribution = homogenization finding (advisory). Mechanical side: `style stats --dialogue` convergence flags. Report-only; the measured-profile law outranks any homogenization flag.
 - `resources/retune.md` — Adapted from `claude-ghost-writer/skills/retune/SKILL.md` (MIT): author gives raw unguided voice sample; analyze the gap (sentence length, word choice, rhythm, pronoun distance, energy); one alignment pass; no structural changes; update exemplars with the author's own words; **never evaluate the author's raw input for quality**.
 
 ### 8.3 `kb/styles/baseline.md` (template in `templates/`; written by style-creator)
@@ -670,7 +677,7 @@ Never included: full KB, full manuscript, critique reports (revision mode carrie
 | Outline-before-prose | `guard-outline-before-prose.sh` + `guard-bash-prose-writes.sh` | **BLOCKING** (exit 2) | Prose writes to `manuscript/chapters/` without author-approved outline or with uncommitted prior-chapter transaction |
 | Post-write prose net | `check-prose-after-write.sh` | Advisory (blocking only under opt-in `voice_debt_gate`/`stop_gate`) | — |
 | Critique isolation | Architecture | Structural | Critics can't write; writer never sees raw critique; muse synthesizes |
-| Blind reader | `@blind-reader` | **BLOCKING at acceptance** for author-flagged pivotal chapters | Acceptance requires `work/critique-reports/blind-chapter-NN.md` with verdict ≠ `LOST`; `state check` refuses the acceptance + `vellum readiness` cross-checks every `pivotal: true` chapter has its artifact [JUDGE-FIX: closes the "partial blind gate" flag] |
+| Blind reader | `@blind-reader` | **BLOCKING at acceptance** for author-flagged pivotal chapters | Acceptance requires `work/critique-reports/blind-chapter-NN.md` with verdict ≠ `LOST`; `state check` refuses the acceptance + `vellum readiness` cross-checks every `pivotal: true` chapter has its artifact [JUDGE-FIX: closes the "partial blind gate" flag]. **Single-agent (no-subagent) fallback (v0.1.1):** the blind gate cannot be honestly satisfied in one context — muse says so plainly and the author chooses: drop the `pivotal: true` flag, or enable the fallback (the author sets `blind_gate_fallback: true` in `kb/project-config.json`; the muse never sets it) and soft-fail (the main loop performs a naive-eyes pass in a fresh stance-turn, records the artifact with `run_stamp: blind-reader (single-agent fallback) …`, and presents an explicit warning before acceptance; `state check`/`vellum readiness` reject the fallback-qualified stamp unless the author's flag is set) |
 | Demolition | Muse dialogue, offered before `final` | Advisory | Nothing automatic; deferred/accepted issues surface in `readiness` |
 | Disruptor | `@disruptor` [JUDGE-FIX] | Advisory, opt-in | Nothing — proposal-only escalation lane for flat chapters |
 | Persona panel | `@critic` × 4 personas | Advisory | Milestone chapters, disputed judgments |
@@ -692,10 +699,14 @@ Requires ALL of:
    put_down_points: []    # chapter numbers; any in ch. 1–3 disqualifies
    read_at: 2026-09-09
    readers: 4
+   run_stamp: beta-reader PASS 2026-09-09T12:00:00Z   # self-recorded by the reader at run time
+   transcript: <path>     # optional, strongest provenance: the subagent transcript path
    ---
    ```
 
    PASS rule (from Velith, adapted): every axis ≥ 7, mean ≥ 7.5, no put-down in chapters 1–3.
+
+   **Provenance binding (v0.1.1):** gate artifacts are muse-transcribed, so each must carry a provenance record that a real run produced the verdict. Accepted forms, strongest first: (1) `transcript:` — the subagent transcript path, verified to exist and carry the verdict; the muse records it when the path is known, including via the documented search (newest session transcripts under `~/.claude/projects/` matching the verdict line). (2) `run_stamp:` — the reader agent **self-records** a run stamp in its returned report frontmatter at run time (`<agent> <verdict> <ISO date>`), which the muse transcribes verbatim like the verdict itself — inventing it is the same fabrication as inventing the verdict, and unlike a SubagentStop payload it reliably reaches the conversation that persists the artifact. `vellum readiness` and `state check` verify whichever form is present; an artifact with neither fails the gate. The single-agent blind-read fallback records `run_stamp: blind-reader (single-agent fallback) <verdict> <date>`, is accepted only when the author has enabled `blind_gate_fallback: true` in `kb/project-config.json` (rejected otherwise), and the author is warned before acceptance (see §10.1).
 4. Word-budget report attached (total vs plan; per-chapter bands).
 5. `vellum export build --out export/manuscript-<date>` assembles: title page, copyright placeholder, front/back matter, joined chapters in order, `manifest.md` (chapter list, word counts, sha256 checksums, **gate provenance**: outline approval dates, blind verdicts, beta scores, logged overrides — never silent). `--epub`: stdlib-zipfile EPUB, stable `urn:uuid:<book-uuid>` identifier from `kb/story.md` so highlights survive rebuilds. DOCX/PDF via pandoc when present; otherwise markdown bundle + instructions. The manuscript is untouched — export is a build artifact.
 
@@ -711,7 +722,7 @@ Failure prints a prioritized fix list (beta REVISE format: five changes, each wi
 ---
 name: blind-reader
 description: Naive-eyes verdict on a pivotal chapter; knows nothing of the plan.
-model: claude-opus-4-6
+model: opus
 skills:
 - gates
 tools:
@@ -726,7 +737,7 @@ disallowed-tools:
 ---
 ```
 
-**[JUDGE-FIX: tools are `Read` only — the judged design's `Bash(cat *, rg *)` undermined the isolation promise.]** Body contract: sees ONLY the chapter file (via Read, path given by muse) + previous-chapter tail pasted in the prompt. Must not open outline, kb/, `work/critique-reports`, or style files — it has no tools to do so. Judges as a reader who knows nothing of the plan: where they're confused, where causation breaks, where they'd stop, whether the chapter works standalone. Report: verdict `ENGAGED | STALLED | LOST`, put-down point, confusion list, AI-feel flags; scores the five `gates/resources/quality-bar.md` axes. Never suggests fixes. If muse cannot honestly spawn it without leaking plan context, the chapter isn't ready for a blind read. Output persisted by muse to `work/critique-reports/blind-chapter-NN.md` (muse writes; blind-reader has no Write).
+**[JUDGE-FIX: tools are `Read` only — the judged design's `Bash(cat *, rg *)` undermined the isolation promise.]** Body contract: sees ONLY the chapter file (via Read, path given by muse) + previous-chapter tail pasted in the prompt. Must not open outline, kb/, `work/critique-reports`, or style files — it has no tools to do so. Judges as a reader who knows nothing of the plan: where they're confused, where causation breaks, where they'd stop, whether the chapter works standalone. Report: verdict `ENGAGED | STALLED | LOST`, put-down point, confusion list, AI-feel flags; scores the five `gates/resources/quality-bar.md` axes. Never suggests fixes. If muse cannot honestly spawn it without leaking plan context, the chapter isn't ready for a blind read. The report frontmatter carries the reader's **self-recorded run stamp** (`run_stamp: blind-reader <verdict> <ISO date>` — the muse transcribes it verbatim; it is the provenance record the gates verify, v0.1.1). Output persisted by muse to `work/critique-reports/blind-chapter-NN.md` (muse writes; blind-reader has no Write).
 
 ### 11.2 `agents/beta-reader.md` (F, new; opus)
 
@@ -734,7 +745,7 @@ disallowed-tools:
 ---
 name: beta-reader
 description: Four-reader full-manuscript readiness read before export.
-model: claude-opus-4-6
+model: opus
 skills:
 - gates
 - creative-writing-craft
@@ -750,7 +761,7 @@ disallowed-tools:
 ---
 ```
 
-Body: port of `Velith/agents/beta-reader.md` four-reader protocol (A/B target personas, C AI-skeptic, D genre professional) — read that file first and adapt (paths re-scoped to our layout). Reads `kb/story.md` (premise + promise) + genre file from `creative-writing-craft/resources/genre/`, then the full manuscript in order. Must NOT read outlines, style files, or critiques before the first read. Emits: per-chapter engagement table, put-down points, confusion log, AI-feel log (named tells + quotes), promise assessment, five-axis scores per `gates/resources/quality-bar.md`, verdict `PASS|REVISE` with the §10.2 frontmatter. Report returned to muse; muse persists to `work/critique-reports/readiness-report.md`.
+Body: port of `Velith/agents/beta-reader.md` four-reader protocol (A/B target personas, C AI-skeptic, D genre professional) — read that file first and adapt (paths re-scoped to our layout). Reads `kb/story.md` (premise + promise) + genre file from `creative-writing-craft/resources/genre/`, then the full manuscript in order. Must NOT read outlines, style files, or critiques before the first read. Emits: per-chapter engagement table, put-down points, confusion log, AI-feel log (named tells + quotes), promise assessment, five-axis scores per `gates/resources/quality-bar.md`, verdict `PASS|REVISE` with the §10.2 frontmatter including the reader's **self-recorded run stamp** (v0.1.1 provenance). Report returned to muse; muse persists to `work/critique-reports/readiness-report.md`.
 
 ### 11.3 `agents/cold-reader.md` (F, new; sonnet)
 
@@ -758,7 +769,7 @@ Body: port of `Velith/agents/beta-reader.md` four-reader protocol (A/B target pe
 ---
 name: cold-reader
 description: Executes one cold-read batch; assessment only, never edits.
-model: claude-sonnet-5
+model: sonnet
 skills:
 - cold-read
 - gates
@@ -796,7 +807,7 @@ Orchestration lives in the skill, not the agent: muse spawns `@cold-reader` per 
 ---
 name: kb-lead
 description: Knowledge-capture worker; writes only under kb/ and runs engine checks after updates.
-model: claude-sonnet-5
+model: sonnet
 skills:
 - story-memory
 - story-ledgers
@@ -823,7 +834,7 @@ disallowed-tools:
 ---
 name: disruptor
 description: Controlled-wildness proposals for flat chapters; proposal-only.
-model: claude-opus-4-6
+model: opus
 skills:
 - creative-writing-craft
 - story-planning
@@ -851,6 +862,7 @@ Trigger: "`/vellum:export`." SKILL.md: run `vellum readiness`; if PASS run `vell
 
 ### 12.5 Commands (G; format per §3.4)
 
+- `init.md` — routes to the `project-setup` skill (added v0.1.1: setup intent needs a first-class entry point, not only skill-description discovery).
 - `write-chapter.md` — body walks muse through the §13 loop verbatim; `$ARGUMENTS` = optional chapter number or "next".
 - `status.md` — print state card + gate statuses + open findings summary.
 - `cold-read.md` — `$ARGUMENTS` = optional chapter range; set up `work/cold-reads/<YYYY-MM>/` from `templates/cold-read/` if missing; spawn batches.
@@ -869,7 +881,7 @@ Files carry the schemas of §7 (chapter, promise, question, knowledge-entry, pro
 1. `/vellum:write-chapter` → muse confirms direction in one exchange, spawns `@outliner` (beats + quotas + `verbatim:`), shows outline, author approves → `approved: true`; author (or muse proposal the author approves) sets `pivotal:`.
 2. Muse runs `state check`, spawns `@writer` with the §9 pack. Post-write net runs silently (speaks only on tells; debt recorded).
 3. Muse spawns routine critics (1–2 lanes normal, 3–5 + blind reader for pivotal), synthesizes, presents: what changed, what works, what concerns, what decision is needed. Author approves → acceptance (pivotal: blind artifact required).
-4. `chapter-maintenance.sh` runs the mechanical close-out silently; muse routes `@kb-lead` for fact/ledger capture; state card rebuilds.
+4. The acceptance edit fires the mechanical close-out silently (`check-prose-after-write.sh`: `wordcount --write`, `ledger check`, `state rebuild`; `chapter-maintenance.sh` runs the same pass as an advisory pre-pass when the writer stops); muse routes `@kb-lead` for fact/ledger capture; state card rebuilds.
 5. Muse offers demolition before `final` (author may decline). Interrupt anywhere; next session the SessionStart hook prints the state card. `/vellum:status` any time.
 
 Ceremony only where it earns its keep: outline approval (once), acceptance (once), three gates (hard).

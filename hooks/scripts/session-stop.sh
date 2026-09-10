@@ -21,7 +21,7 @@ ROOT=$(project_root)
 if [ -f "$ROOT/state/_tracking-state.json" ]; then
   PENDING="$(grep -oE '"pending_capture"[[:space:]]*:[[:space:]]*true' "$ROOT/state/_tracking-state.json" 2>/dev/null || true)"
   if [ -n "$PENDING" ]; then
-    printf '%s\n' "vellum: a chapter is accepted but its transaction is not closed (pending_capture: true). Complete the close-out: route @kb-lead for capture, offer demolition, set status: final, then run the engine close-out with your Python interpreter (python3 / python / py -3 scripts/vellum state rebuild) - or just /vellum:write-chapter maintenance."
+    printf '%s\n' "vellum: a chapter is accepted but its transaction is not closed (pending_capture: true). Complete the close-out: route @kb-lead for capture, offer demolition, set status: final, then run the engine close-out with your Python interpreter (python3 / python / py -3 scripts/vellum state rebuild) - or run /vellum:write-chapter, which walks the close-out with you."
   fi
 fi
 

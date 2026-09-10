@@ -1,7 +1,7 @@
 ---
 name: writer
 description: Production prose from scene briefs, revision notes, and style references; uses progressive mode guidance for fresh drafts, revisions, bridges, alternate takes, and line polish.
-model: claude-opus-4-6
+model: opus
 skills:
 - creative-writing-modes
 - creative-writing-craft

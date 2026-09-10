@@ -534,6 +534,7 @@ def load_config(root):
         "drift_interval": 5,
         "voice_debt_gate": False,
         "stop_gate": False,
+        "blind_gate_fallback": False,
         "default_word_target": 3200,
         "word_band": 0.15,
     }

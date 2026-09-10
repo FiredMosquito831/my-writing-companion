@@ -82,11 +82,21 @@ prose, and `[VERIFY]` remnants. Then runs the style tier net via
 `prose_core.py scan` (tier-1 kill-on-sight, tier-2 cluster heuristic,
 em-dash density with the list-item typography carve-out and the measured
 baseline cap, near-verbatim duplicate lines), falling back to an embedded
-tier-1 `grep` pattern when Python is absent. Output is a `PostToolUse`
+tier-1 `grep` pattern when Python is absent. Finally, when the engine is
+available, the hook also runs the **Romanian tense/person morphology pass**
+(ADD-6: `vellum style stats <file> --morphology`): per-chapter narrative-tense
+and narration-person distributions, with report-only suggestion-severity
+findings (mid-chapter shifts, drift vs the declared `tense:`/`pov-person:`
+frontmatter, inherited from `kb/story.md`) surfaced as JSON finding lines.
+A Romanian-confidence gate (function words + diacritic density) keeps the
+pass silent on non-Romanian prose — English chapters would otherwise
+tripwire the perfect-compus heuristic on "a rest" / "a moment" patterns.
+Output is a `PostToolUse`
 `additionalContext` JSON block, one line per finding; exit 0 always; silent
 when clean. Writes/updates `work/voice-debt.json` with open tier-1 hits. A
 `<!-- voice:skip -->` comment anywhere in the chapter suppresses tier-1 debt
-accrual for that chapter (author escape hatch).
+accrual and the morphology scan for that chapter (author escape hatch; the
+net's tier-1 findings and hard signals still surface).
 
 When the edit leaves the chapter at `status: accepted`/`final`, this hook also
 runs the **mechanical chapter close-out** (`wordcount --write`, `ledger check`,

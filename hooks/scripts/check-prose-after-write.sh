@@ -8,7 +8,15 @@
 # JSON block with one line per finding. Hard signals (truncation, model refusal,
 # placeholders, engineering words, [VERIFY] remnants) are scanned in bash; the style
 # tier net runs via prose_core.py scan, falling back to an embedded tier-1 grep pattern
-# when Python is absent.
+# when Python is absent. The Romanian tense/person morphology scan (ADD-6;
+# `vellum style stats <file> --morphology`) also runs as part of this advisory
+# post-write pass when the engine is available: report-only suggestion-severity
+# findings (JSON lines, grep-filtered below), no exit-code change, silent when
+# the chapter is clean. A chapter-level <!-- voice:skip --> suppresses tier-1
+# debt accrual and the morphology scan for deliberate tense play (the net's
+# tier-1 findings and hard signals still surface); a per-line <!-- tense:skip -->
+# valve is honored inside the scanner (style-guardrails/resources/structural-caps.md). The
+# scan is skipped without a Python interpreter, like every engine path here.
 set -u
 
 HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -101,6 +109,17 @@ else
   if [ -n "$GREP_HITS" ]; then
     OUT+="tier-1 AI phrasing (bash fallback - install Python for the full net):${NL}${GREP_HITS}${NL}"
   fi
+fi
+
+# --- Tense/person morphology scan (advisory, report-only) ---
+# Runs as part of the advisory post-write pass (see header comment): only the
+# scanner's JSON finding lines are surfaced (the text distribution report is
+# for the CLI); silent when the chapter is clean; skipped for a chapter-level
+# voice:skip carve-out and without a Python interpreter.
+if [ -z "$VOICE_SKIP" ] && VPY=$(vellum_py) && [ -f "$VELLUM_ENGINE" ]; then
+  MORPH="$(cd "$ROOT" && vellum_run "$VPY" "$VELLUM_ENGINE" style stats "$ABS" --morphology 2>/dev/null \
+    | grep '^{' || true)"
+  [ -n "$MORPH" ] && OUT+="${MORPH}${NL}"
 fi
 
 # --- Acceptance close-out (mechanical half of the chapter transaction) ---
