@@ -16,3 +16,5 @@ Load only the resource needed:
 - `resources/structure-beats.md` — K.M. Weiland 10 landmark beats (Hook through Resolution) + James Scott Bell 14 signposts with percentage positions; each beat annotated with the word-quota convention.
 - `resources/scene-cards.md` — 9-field scene card (Characters, Place, Time, Event, Conflict, Story value, Value charge, Mood, Outcome) plus a template block.
 - `resources/try-fail.md` — the arc-level failure ladder: 2–3 attempts before the arc goal succeeds, each costing more; yes-but/no-and as plotting outcomes. Load when outlining an arc or diagnosing a saggy middle.
+
+When the book is linked to a series library, plan with the **do-not-re-explain register** and the **series state card** in context: facts established before this book are listed as "Established before this book — do not re-explain." New characters, props, and world facts that enter series scope get a `series-id:` join key on their kb entity frontmatter (opt-in; absent = invisible to the layer). See `/series` for the command surface and `/series-bible` for the bible schema and field conventions.

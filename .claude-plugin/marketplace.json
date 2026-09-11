@@ -6,13 +6,13 @@
   },
   "metadata": {
     "description": "Vellum: a working novelist's daily tool for Claude Code. One command for the chapter loop, three hard gates, everything else advisory and silent when clean.",
-    "version": "0.1.1"
+    "version": "0.2.0"
   },
   "plugins": [
     {
       "name": "vellum",
       "description": "A working novelist's daily tool for Claude Code: one command for the chapter loop, three hard gates, everything else advisory and silent when clean. The muse agent is the primary entry point; the deterministic Python engine (scripts/vellum) absorbs every check no LLM should burn tokens on.",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "author": {
         "name": "FiredMosquito831",
         "email": "FiredMosquito831@users.noreply.github.com"

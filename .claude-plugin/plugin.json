@@ -1,6 +1,6 @@
 {
   "name": "vellum",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "A working novelist's daily tool for Claude Code: one command for the chapter loop, three hard gates, everything else advisory and silent when clean.",
   "author": {
     "name": "FiredMosquito831",

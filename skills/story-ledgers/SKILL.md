@@ -21,6 +21,8 @@ The story-ledgers skill owns the deterministic continuity layer — the machine-
 - `resources/state-card.md` — the fixed seven-section state card spec (Story position · Open promises & questions · Active cast · Knowledge boundaries · Props & clock · Next beats with word quotas · Flags), the ≤12KB hard cap, the engine-writes / never-hand-edits rule, and how it is used for resume and writer spawns.
 - `resources/write-time-capture.md` — the chapter transaction: the mechanical half (acceptance close-out via `check-prose-after-write.sh`, writer-stop pre-pass via `chapter-maintenance.sh` — wordcount, ledger check, state rebuild), the LLM half (`@kb-lead` — fact/ledger capture + frontmatter backfill), the close-out sequence, and the "never hand-edit derived files" rule.
 
+**Series attachment (optional).** When a book is linked to a library, entity frontmatter MAY carry an opt-in `series-id:` line (e.g. `series-id: char:lena-popescu`). Absent = entity invisible to the series layer. No change to ledger file schemas; the series layer reads the join key only. Canon truth lives in `series/bible.json`, never mirrored as `canon:` in book kb files. See `/series`.
+
 ## Who loads this skill
 
 - **Muse** — when planning chapters, answering "what's still open / who knows what," or routing capture work.

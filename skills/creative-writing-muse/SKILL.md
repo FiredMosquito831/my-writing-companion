@@ -28,6 +28,7 @@ Load the skills needed for the next stance:
 - **Voice and terms:** `/creative-writing-craft`, `/character-sim`, `/shared-dao`
 - **Memory:** `/story-memory`; also `/kb-management` and `/project-setup` if available
 - **Ledgers:** `/story-ledgers` — planning chapters, capturing what a chapter changed, answering what's still open / who knows what
+- **Series:** `/series` — linking a book to a library, bootstrap and retcon lifecycle, the retcon detection catalog, handoff generation, series state card (optional library layer; advisory-only, no fourth gate)
 - **Gates:** `/gates` — before accepting a pivotal chapter, before export, any scoring task
 - **Demolition:** `/demolition` — offered before marking a chapter `final` (author may decline)
 - **Voice:** `/voice` — voice capture, drift checks, retune when the prose stops sounding like the author

@@ -5,6 +5,8 @@ model: sonnet
 skills:
 - story-memory
 - story-ledgers
+- series
+- series-bible
 tools:
 - Read
 - Write

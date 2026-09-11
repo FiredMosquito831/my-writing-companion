@@ -14,8 +14,15 @@ import pytest
 
 PLUGIN_ROOT = Path(__file__).resolve().parent.parent
 FIXTURE_DIR = Path(__file__).resolve().parent / "fixtures" / "sample-project"
+LIBRARY_FIXTURE_DIR = Path(__file__).resolve().parent / "fixtures" / "library"
 sys.path.insert(0, str(FIXTURE_DIR))
 import seed as fixture_seed  # noqa: E402  (fixture project seeder)
+
+import importlib.util
+_library_seed_spec = importlib.util.spec_from_file_location(
+    "library_fixture_seed", LIBRARY_FIXTURE_DIR / "seed.py")
+library_fixture_seed = importlib.util.module_from_spec(_library_seed_spec)
+_library_seed_spec.loader.exec_module(library_fixture_seed)
 
 HOOKS_SCRIPTS = PLUGIN_ROOT / "hooks" / "scripts"
 ENGINE = PLUGIN_ROOT / "scripts" / "vellum"
@@ -50,6 +57,32 @@ def project(tmp_path):
     dst.mkdir()
     fixture_seed.seed(str(dst))
     return dst
+
+
+@pytest.fixture()
+def library(tmp_path):
+    """A two-book library fixture with deliberate series retcons."""
+    return library_fixture_seed.seed(str(tmp_path / "series-fixture"))
+
+
+@pytest.fixture()
+def library_books(library):
+    return library.parent / "book-1", library.parent / "book-2"
+
+
+@pytest.fixture()
+def library_engine(library):
+    """Callable for scripts/library.py, rooted at the library fixture."""
+    script = PLUGIN_ROOT / "scripts" / "library.py"
+
+    def run(*args):
+        env = dict(os.environ)
+        env["PYTHONIOENCODING"] = "utf-8"
+        return subprocess.run(
+            [sys.executable, str(script), *args], cwd=str(library),
+            capture_output=True, text=True, encoding="utf-8", env=env,
+            timeout=120)
+    return run
 
 
 @pytest.fixture()

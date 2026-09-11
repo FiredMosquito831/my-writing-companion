@@ -84,7 +84,7 @@ def _load_debt(root):
     if not os.path.exists(p):
         return {"schema_version": 1, "items": []}, p
     try:
-        with open(p, "r", encoding="utf-8") as f:
+        with open(p, "r", encoding="utf-8-sig") as f:
             doc = json.load(f)
     except Exception:
         return {"schema_version": 1, "items": []}, p

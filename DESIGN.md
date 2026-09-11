@@ -1,6 +1,7 @@
 # VELLUM — Definitive Build Spec
 
 **Date:** 2026-09-09. **Base:** fork of `haowjy/creative-writing-skills` `cw/` distribution.
+**v0.2.0 (2026-09-10):** adds the optional library/series layer per [`library-spec.md`](../library-spec.md) — engine entry `scripts/library.py` backed by `vellum_lib/series_bible.py` + `vellum_lib/series_checks.py` + `vellum_lib/series_cli.py` (a separate series dialect; the v0.1.1 modules below are unchanged), skill `series` (+ `references/checks.md`), command `series.md`, template `retcon-plan.md`, a fail-open series line in `session-start.sh`, optional `role:` in `templates/character.md`, series references in `agents/muse.md` and `agents/kb-lead.md`, and the semantic rules in new §18. No v0.1.1 engine/gate/hook contract changes below §1–§17; the three hard gates stay three.
 **Philosophy (binding):** a working novelist's daily tool, not a pipeline to admire. One command for the chapter loop; exactly three hard gates (approved outline before prose; blind-reader verdict on pivotal chapters; beta-reader PASS before export); everything else advisory and silent when clean. Stance isolation is sacred; scripts absorb every check no LLM should burn tokens on; a fixed state card makes interrupt/resume one screen. The author approves, dismisses, and retunes — the machine never re-litigates a dismissed choice.
 
 All `repos/<repo>/<path>` paths below are relative to `C:/Users/iulia/Desktop/ultra-writing-plugin/repos/`. Base paths are relative to `repos/creative-writing-skills/cw/`.
@@ -85,8 +86,12 @@ vellum/
 │       └── prose_core.py                # Python; pure-bash fallback lives inside the .sh files
 ├── scripts/                             # B — all new
 │   ├── vellum                           # entry script (shebang python3; invoked via resolved interpreter)
+│   ├── library.py                       # v0.2.0 — library/series CLI entry (thin wrapper over vellum_lib.series_cli)
 │   └── vellum_lib/
 │       ├── __init__.py
+│       ├── series_bible.py  # v0.2.0 — bible load/validate, by-book resolution, timeline index (separate series dialect)
+│       ├── series_checks.py # v0.2.0 — §10 detection catalog
+│       ├── series_cli.py    # v0.2.0 — argparse dispatch for all `library` subcommands
 │       ├── util.py          # paths, atomic write, lockfile, yaml-lite frontmatter parser
 │       ├── state.py         # state rebuild / state check / state card
 │       ├── ledgers.py       # ledger check
@@ -110,7 +115,7 @@ vellum/
 │   ├── cold-reader.md         # F new
 │   ├── kb-lead.md             # G new
 │   └── disruptor.md           # G new [JUDGE-FIX]
-├── skills/                              # 32 total: 24 base + 8 new
+├── skills/                              # 33 total: 24 base + 8 new + 1 v0.2.0 (series)
 │   ├── (24 base dirs kept; A edits 6 of them:
 │   │    story-planning, writing-staffing, story-review, project-setup, story-memory, creative-writing-muse)
 │   ├── story-ledgers/                   # D new  + resources/{ledger-files.md, state-card.md, write-time-capture.md}
@@ -120,13 +125,15 @@ vellum/
 │   ├── gates/                           # D new  + resources/{quality-bar.md, readiness.md, finding-schema.md, genre-profiles.md}
 │   ├── demolition/                      # G new
 │   ├── export/                          # G new  + resources/{assembly.md, manifest.md}
-│   └── kb-integrity/                    # D new
+│   ├── kb-integrity/                    # D new
+│   └── series/                          # v0.2.0 — library/series layer  + references/checks.md
 ├── commands/                            # G — all new
-│   ├── write-chapter.md  status.md  cold-read.md  retune.md  export.md  dismiss.md
+│   ├── write-chapter.md  status.md  cold-read.md  retune.md  export.md  dismiss.md  series.md
 ├── templates/                           # G — all new (copied into author projects by project-setup)
 │   ├── chapter.md  scene-card.md  promise.md  question.md
 │   ├── knowledge-entry.md  prop.md  character.md  state-card.md
 │   ├── project-config.json  exemptions.json
+│   ├── retcon-plan.md                   # v0.2.0 — series retcon plan report (approved: frontmatter)
 │   └── cold-read/{charter.md, reader-ledger.md, issues.md, batch-report.md}
 └── tests/                               # H — all new (repo-level; not part of plugin runtime)
     ├── conftest.py  test_hooks.py  test_engine.py
@@ -380,6 +387,7 @@ Header: `# Vellum deterministic engine. Original code (base design credited in A
 | `revision status` | Cross-check of `work/revision-plan.md` against the source artifacts findings came from (ADD-3): a row marked `resolved` whose source finding is still active is reported stale; a `declined` row without the author's verbatim reason is reported as a finding. **Report-only; not a gate.** |
 | `readiness` | Evaluates §10 preconditions; prints PASS or a prioritized missing list. |
 | `export build --out <dir> [--epub]` | Deterministic assembly (§10.2): joined chapters, title page, manifest with sha256 checksums + gate provenance; `--epub` builds a stdlib-zipfile EPUB with a stable identifier (`book-uuid` from `kb/story.md`) so highlights survive rebuilds [JUDGE-FIX: removes pandoc from the critical path; pandoc remains optional for DOCX/PDF]. |
+| `library <sub>` (v0.2.0) | The library/series dispatcher (`scripts/library.py`, not `vellum_lib`): `init`, `link`, `unlink`, `validate`, `bootstrap`, `retcon-check`, `retcon-plan`, `retcon --apply`, `state`, `timeline`, `handoff`, `dismiss`. Semantics and contracts in §18 / [`library-spec.md`](../library-spec.md); requires an explicit `--root`, never probes a book project. |
 
 ---
 
@@ -429,7 +437,7 @@ Each script: `#!/bin/bash` + attribution header (port credit to oh-story) + `set
 | `guard-outline-before-prose.sh` | PreToolUse Write/Edit/MultiEdit | Read stdin JSON; extract `tool_input.file_path` (pipe to `prose_core.py extract-target`; **pure-bash fallback**: `grep`/`sed` for `"file_path"\s*:\s*"..."`). Normalize path. If target NOT under `manuscript/chapters/` → exit 0. Else check: (1) `work/outline/chapter-NN.md` exists and frontmatter `approved: true` (bash grep; two-digit NN from the target filename); (2) if `vellum_py` resolves: `"$VELLUM_PY" scripts/vellum state check` exit 0 (else print one advisory line to stderr and continue — the bash predicate still gates); (3) rewriting an existing `draft` chapter re-checks only (2). Parse failure or target ambiguity → exit 0 (fail-open). On block: exit 2, stderr = exactly one sentence naming the missing precondition + the exact command to satisfy it. **BLOCKING — gate 1.** |
 | `guard-bash-prose-writes.sh` | PreToolUse Bash | Same stdin; scan `tool_input.command` for redirection/heredoc/tee/cp/mv writing into `manuscript/chapters/` (pattern list from oh-story's Bash-guard concept). If found, run the same predicate as the Write guard for the detected target. **Outline-copy detector**: target is a new chapter file while a prior chapter of near-identical byte size exists → run `diff` similarity; > 90 % shared lines → block. Uncertain → exit 0. **BLOCKING — gate 1, alternate path.** |
 | `check-prose-after-write.sh` | PostToolUse Write/Edit/MultiEdit | Only for `manuscript/chapters/*.md`. Hard signals: truncation markers, model-refusal phrases, placeholder text (`[TODO`, `[INVENTED]` flagged if left in an `accepted` chapter), engineering words in prose, `[VERIFY]` remnants ("extract to kb questions before acceptance"). Then engine path: `prose_core.py scan <file>` (tier-1 banned words, tier-2 cluster heuristic, em-dash density, near-verbatim duplicated line check — patterns ported from `avoid-ai-writing/detector/patterns.js` fiction subset + autonovel tier tables *as re-derived data*). Bash fallback: `grep -n` tier-1 table embedded in `prose_core.py --emit-grep`. Output: PostToolUse additionalContext JSON, one line per finding. **Advisory, exit 0 always; silent when clean.** Writes/updates `work/voice-debt.json` (open tier-1 hits with ids) for the debt accounting. `<!-- voice:skip -->` anywhere in the chapter suppresses tier-1 debt accrual for that chapter (author escape hatch). When the edit leaves the chapter at `status: accepted`/`final`, this hook **fires the mechanical chapter close-out** (`"$VELLUM_PY" scripts/vellum wordcount --write && ledger check && state rebuild`) — the transaction runs at acceptance. Shipped v0.1.1: the advisory pass also runs the tense/person morphology scan (`style stats <file> --morphology`, ADD-6) — report-only suggestion-severity JSON lines, no exit-code change, silent when clean; suppressed by a chapter-level `voice:skip` and honored per-line via the `<!-- tense:skip -->` valve (see `structural-caps.md`). |
-| `session-start.sh` | SessionStart | If `state/state-card.md` exists: print card + last 5 `work/` issue lines + pending `[VERIFY]` count + resume pointer (current chapter, its outline status). Else: one line suggesting `/vellum:status`. Advisory. |
+| `session-start.sh` | SessionStart | If `state/state-card.md` exists: print card + last 5 `work/` issue lines + pending `[VERIFY]` count + resume pointer (current chapter, its outline status). Else: one line suggesting `/vellum:status`. Advisory. v0.2.0 (fail-open, §18): when the project is a linked book and the engine resolves, append a one-line series summary via `library.py state --card-line` (stderr discarded); on any error the line is silently omitted — session start is never blocked, and unlinked projects are byte-identical to v0.1.1. |
 | `pre-compact.sh` | PreCompact | Copy `state/state-card.md`, ledger `_index` heads, current chapter path, last 40 lines of the active issue log → `work/snapshots/compact-<timestamp>/`. No git operations. Silent on success. |
 | `session-stop.sh` | Stop | If `state/_tracking-state.json` has `pending_capture: true` → one reminder line naming the close-out command; else silent. If `kb/project-config.json` `stop_gate: true`: also run the post-write hard-signal scan on the current chapter and emit a block on truncation/refusal markers only (documented opt-in fourth gate). Default config = never blocks. |
 | `chapter-maintenance.sh` | SubagentStop matcher `writer` | **Advisory writer-stop pre-pass** (not the close-out): runs `"$VELLUM_PY" scripts/vellum wordcount --write && ledger check && state rebuild` against the chapter the writer actually touched (identified from the SubagentStop transcript; fallback: highest-numbered chapter), so the state card never goes stale between drafting sessions. Success → **silent**. Failure → print failing check + fix direction as the SubagentStop message (stdout goes to transcript; hence silent-on-success is mandatory). Missing interpreter or broken engine → bash wordcount + honest advisory line. `pending_capture` is **derived from chapter status by `state rebuild` on every run** — no hook clears it; the mechanical close-out that completes the acceptance transaction fires from `check-prose-after-write.sh` when an edit leaves the chapter at `status: accepted`/`final` (see §13 / `write-time-capture.md`). |
@@ -869,10 +877,11 @@ Trigger: "`/vellum:export`." SKILL.md: run `vellum readiness`; if PASS run `vell
 - `retune.md` — voice retune protocol (`voice/resources/retune.md`).
 - `export.md` — §10.2 sequence.
 - `dismiss.md` — `$ARGUMENTS` = key + reason; refuses to run unless the author's message contains the reason in their own words; calls `vellum dismiss`.
+- `series.md` (v0.2.0) — routes to the `series` skill; `$ARGUMENTS` = the `library` subcommand + args (init/link/unlink/validate/bootstrap/retcon-check/retcon-plan/retcon/state/timeline/handoff/dismiss). The series skill owns the `library` dispatch surface and is the operator's manual; the command itself never introduces a fourth gate (§18).
 
 ### 12.6 `templates/` (G)
 
-Files carry the schemas of §7 (chapter, promise, question, knowledge-entry, prop, character), `state-card.md` (7-section skeleton with placeholders), `exemptions.json` (§7.3 example with empty array), `project-config.json` (§3.8), and `cold-read/{charter.md, reader-ledger.md, issues.md, batch-report.md}` adapted from the fiction-forge templates (MIT, credited). `scene-card.md` = the 9-field card from `story-planning/resources/scene-cards.md`. `templates/scene-card.md` is referenced by project-setup.
+Files carry the schemas of §7 (chapter, promise, question, knowledge-entry, prop, character), `state-card.md` (7-section skeleton with placeholders), `exemptions.json` (§7.3 example with empty array), `project-config.json` (§3.8), and `cold-read/{charter.md, reader-ledger.md, issues.md, batch-report.md}` adapted from the fiction-forge templates (MIT, credited). `scene-card.md` = the 9-field card from `story-planning/resources/scene-cards.md`. `templates/scene-card.md` is referenced by project-setup. v0.2.0 adds `retcon-plan.md` — the `library retcon-plan` report format (§18): frontmatter `approved: false` / `author_words_required: true`, one row per divergence with `entity`, `field`, `old_by_book`, `new_by_book` (author fills), `coordinate`, and a verbatim `author_words` field; `library retcon --apply` refuses unless `approved: true` and every row's `author_words` is non-empty.
 
 ---
 
@@ -933,4 +942,36 @@ Ceremony only where it earns its keep: outline approval (once), acceptance (once
 
 ## 17. Deliberately NOT built (ceremony control — binding)
 
-No dashboard/localhost server, no SQLite/graph databases, no MCP server dependency, no per-episode voice tables re-enforced automatically, no 16-axis polish, no autonomous pipelines, no per-chapter opus blind reads (pivotal only), no default-on fourth gate. Every mechanism earns its place by (a) blocking something that must not happen, (b) replacing an LLM call with a script, or (c) persisting reader/critic state across sessions. That is the whole plugin.
+No dashboard/localhost server, no SQLite/graph databases, no MCP server dependency, no per-episode voice tables re-enforced automatically, no 16-axis polish, no autonomous pipelines, no per-chapter opus blind reads (pivotal only), no default-on fourth gate. Every mechanism earns its place by (a) blocking something that must not happen, (b) replacing an LLM call with a script, or (c) persisting reader/critic state across sessions. That is the whole plugin. The v0.2.0 library/series layer changes nothing here: series findings are advisory (exit 1 at most), and the layer's own ledger (library-spec §16) rejects blocker promotion, cross-root exemption flipping, `kb/story.md` mutation, and programmatic context-file edits.
+
+---
+
+## 18. Library / series layer (v0.2.0 — semantics)
+
+Full spec: [`library-spec.md`](../library-spec.md) (§ references below are to that document). This section records the semantic decisions DESIGN-consumers code against.
+
+**Topology.** A library root lives **outside** every book project and holds the engine-owned state: `library.json` (manifest, `kind: "vellum-library"`, unknown fields rejected), `series/bible.json` (single source of truth for series canon), `series/retcons.jsonl` (append-only audit log), `series/exemptions.json` (series-scope dismissals), human-owned `series/errata.md`, generated `reports/` + `handoff/`, and an advisory `.lock`. `library init` refuses (exit 2) inside a directory containing `kb/`, `manuscript/`, or `state/`; there is no filesystem discovery — every subcommand takes an explicit `--root <library-root>` (init additionally accepts the positional `<library-root>` form, spec 8.1).
+
+**Single source of truth.** All series-canonical state lives in `bible.json` as per-field `by-book` value maps (keys = book ordinals as strings) or immutable `{ "value": ... }` literals; the effective value at ordinal N is a plain map lookup (§11) — no log walk, no re-derivation. Book kb files are **never** given a `canon:` mirror; the only series field agents may write in a book kb file is the opt-in `series-id:` join key on entity frontmatter, and only via `library bootstrap --apply` after human resolution of `[?]` rows. Markdown is human-facing reports only, never parseable state.
+
+**Coordinates.** `book-<ordinal>/chapter-<NN>` (slash form) in all markdown; `ordinal:chapter-NN` inside bible internals; both parse to the same key. A bare `chapter-NN` in a `series/` file is itself a finding (`series:unqualified-ref`).
+
+**Link lifecycle.** `link` generates a `book_uuid` and writes the inert sidecar `.vellum/series-link.json` first, then the manifest entry — sidecar-first ordering makes a crash between the two writes recoverable (`validate` reports `series:half-linked`; re-running `link` completes idempotently). Books are matched by `book_uuid`, never by realpath (Windows case/separator brittleness). `unlink` retains canon (orphan refs flagged, `series:orphan-book-ref`) and removes the sidecar; `series-id:` frontmatter lines stay behind, inert to a v0.1.1 engine.
+
+**Bootstrap (deterministic capture, never invention).** Three match tiers per book kb entity — **exact** (same `series-id:` or normalized exact name), **alias** (whole-string alias equality, tagged `series:id-mismatch` advisory), **`[?]`** (everything else; writes nothing, human resolution required). Matching runs on frontmatter fields and kb entity names only — **never chapter prose**. `--plan` writes a report; `--apply` refuses unless the plan frontmatter carries `approved: true` plus the author's verbatim resolution notes.
+
+**Retcon lifecycle.** `retcon-plan` → author review → `retcon --apply` per-row transactions: lock → append JSONL row (`author_words` verbatim, never edited) → update the bible `by-book` map → bump the monotonic `next_retcon_id` → flush matching stale exemptions → release. The retcon log is the audit trail only; the bible is the queryable truth (a JSONL row without matching bible state is flagged `series:retcon-log-orphan`).
+
+**Freeze doctrine.** Per-book `status ∈ draft | published | archived`. `published` canon is frozen: the default merge is *retcon record required* (the draft loses, never later-wins); changing frozen canon requires the author's explicit override, and rows touching published wording are marked `kind: errata` (reader-facing posture recorded once in `errata.md`). `archived` is fully quiet — exempt from divergence *and* history findings. Frozen books never get their kb silently edited by the layer.
+
+**Exemptions.** Series dismissals are per-finding (`series:<check>:<entity>:<ordinal>:<chapter>` keys), live and die in the library, and never touch a book's `kb/exemptions.json` — no silent migration, no silent carry. Every entity-bound dismissal is bound to the kb entity's `entity_hash`; a direct author edit flips it stale and the finding re-fires once, uniformly (§6.3).
+
+**Findings are advisory.** Exit codes stay 0 clean / 1 findings-or-plan / 2 usage-schema-environment error; no subcommand returns a gate-like blocker. `retcon-check` counts deterministic checks separately from judgment-flagged rows (`resolution: judgment` routed to muse/kb-lead, never engine-resolved); the shared finding schema gains only additive optional fields (`book`, `series_scope`) — no version bump.
+
+**State injection.** `library state` prints a fixed-section series card (≤ 12 KB): linked books/statuses, the do-not-re-explain register ("Established before this book — do not re-explain"), open retcons, iron facts, last 5 retcons. It is injected as a new fixed section into the existing `vellum state` output when the book is linked; unlinked output stays byte-identical to v0.1.1.
+
+**Timeline.** Events carry stable, never-renumbered `E###` ids and structured ISO-8601 `when` values (unparseable = flagged, never prose-parsed); the manifest's `next_event_id` is the monotonic source.
+
+**Session hook (fail-open).** `session-start.sh` appends a one-line series summary only when the project is a linked book and the engine resolves, via `library.py state --card-line` with stderr discarded; any error silently omits the line. No other hook changes; no programmatic `CLAUDE.md` edits.
+
+**Compatibility enforcement.** The byte-identity golden suite (library-spec §17 T1–T3) snapshots the full v0.1.1 command surface before link / after link / after bootstrap / after retcon and asserts (a) ≡ (b) byte-for-byte, (c) differs only by `series-id:` lines; the inert-to-old-engine test (T2) deletes the series modules and re-runs the surface unchanged. Uninstall: `library unlink` per book, then delete the library root — no hidden state remains in book projects.

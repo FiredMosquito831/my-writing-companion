@@ -20,6 +20,7 @@ skills:
 - shared-dao
 - grill-with-docs
 - structured-artifact
+- series
 tools:
 - Bash(cat *)
 - Bash(find *)

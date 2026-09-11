@@ -3,6 +3,7 @@ id: character-<kebab-slug>
 type: character
 name: "<character name>"
 status: alive
+role: null
 died-in: null
 aliases: []
 pov-eligible: true
@@ -27,5 +28,7 @@ unused.
 <!--
 Schema per design-spec.md section 7.3.
 - status: alive | deceased | unknown; died-in: chapter-NN when status: deceased
+- role: the character's series-level role or occupation (read by the series
+  layer's FIELD_MAP; leave null when not yet known)
 File name: <id>.md under kb/characters/.
 -->

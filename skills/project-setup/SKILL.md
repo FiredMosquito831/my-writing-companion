@@ -160,6 +160,41 @@ Once approved, create the full §3.7 layout:
     gate's bash predicate still works without it, but the transactional
     checks, ledgers, and the state card need the engine.
 
+## Series Attachment (optional — library layer)
+
+A book may be attached to a series library (vellum v0.2.0). This is
+**optional** and does not change the three hard gates: the series layer is
+advisory-only. `project-setup` itself does **not** create a library —
+attachment is a separate, explicit step after setup, run from outside the
+book project.
+
+**Attach a new or existing book:**
+
+1. From a directory **outside** the book project, run
+   `library init ./<library-name>` (refuses with exit 2 if the target
+   contains `kb/`, `manuscript/`, or `state/` — the library is never
+   initialized inside a book project).
+2. From the library root, run `library link <abs-path-to-book>`. This
+   writes the inert `.vellum/series-link.json` sidecar and adds the book
+   to the manifest. No edit to `kb/story.md`, no schema bump, no
+   `CLAUDE.md` change — the book remains a valid v0.1.1 project.
+3. Run `library bootstrap <book> --plan` and review the deterministic
+   capture report; resolve any `[?]` ambiguity rows with the author's
+   words, then `--apply` to write the opt-in `series-id:` join keys and
+   seed `series/bible.json`.
+4. Verify: `vellum state`, `ledger check`, `bible validate`, `wordcount`,
+   and `knowledge --as-of` still run against the book unchanged.
+
+**Existing projects (migration path, e.g. CARTE2):** the same steps apply.
+Existing `kb/exemptions.json` dismissals stay book-scope; series findings
+start undismissed in the library. Uninstall is reversible:
+`library unlink <book>` removes the sidecar; deleting the library root
+removes the series layer entirely.
+
+The session-start hook prints a one-line series summary only when the book
+is linked and the library engine is reachable (fail-open). See `/series`
+for the full operator's manual.
+
 ## Existing Projects
 
 If `CLAUDE.md` already has creative writing conventions, read it first and

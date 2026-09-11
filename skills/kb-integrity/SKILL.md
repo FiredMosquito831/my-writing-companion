@@ -8,7 +8,17 @@ description: |
 
 The kb-integrity skill is the operator's manual for the deterministic engine — the mechanical half of the continuity layer. It teaches **which command to run, how to read what it says, what to do when it flags something, and how to repair things when they break**. The engine is a regression fence, not a discovery tool: it catches the errors no API call should be spent on (dead-character reappearances, promise ordering, knowledge `learned-in` violations, schema violations, hand-edited state). The cold read and the critics find what the linters cannot — but the linters are what you run first, because they are deterministic, cheap, and reproducible.
 
-## The engine commands
+## When a book is linked to a library, the series layer adds two companion
+commands: `library retcon-check` (the detection catalog — §10) and
+`library state` (the series state card, injected into the existing `vellum
+state` output). The book-local commands (`bible validate`, `ledger check`,
+`wordcount`, `knowledge --as-of`, `state rebuild`) are unchanged in
+contract — they run against the book as before, and the sidecar
+`.vellum/series-link.json` is inert to them. Do not run series commands
+against a book that is not linked; `library retcon-check` and `library
+state` refuse (exit 2) if the book has no sidecar.
+
+The engine commands
 
 Run from the project root. All are stdlib Python, invoked as
 `python3 scripts/vellum <sub>` — resolve the interpreter in order `python3`,

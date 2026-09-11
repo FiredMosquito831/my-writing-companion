@@ -641,3 +641,40 @@ def test_ambiguous_transcript_fails_closed_for_gate_inputs(hook, project, tmp_pa
     r = hook("guard-outline-before-prose.sh",
              _payload(target, {"transcript_path": _transcript(tmp_path, False)}))
     assert r.returncode == 0
+
+
+# ---------------------------------------------------------------------------
+# Session-start hook: fail-open series card line (library-spec 14.1)
+# ---------------------------------------------------------------------------
+
+def test_session_start_prints_series_line_for_linked_book(
+        hook, project, library_engine, tmp_path):
+    libroot = tmp_path / "hook-library"
+    assert library_engine("init", "--root", str(libroot)).returncode == 0
+    assert library_engine("link", "--root", str(libroot),
+                          str(project)).returncode == 0
+    r = hook("session-start.sh")
+    assert r.returncode == 0
+    assert "Series:" in r.stdout
+    # unlink: the sidecar is gone and the line is silently omitted
+    import shutil
+    shutil.rmtree(str(project / ".vellum"))
+    r = hook("session-start.sh")
+    assert r.returncode == 0
+    assert "Series:" not in r.stdout
+
+
+def test_session_start_omits_series_line_when_library_unreachable(
+        hook, project):
+    # a sidecar pointing at a missing library must fail open: no line, no
+    # nonzero exit, never a blocked session start
+    sidecar_dir = project / ".vellum"
+    sidecar_dir.mkdir()
+    (sidecar_dir / "series-link.json").write_text(
+        json.dumps({"series_root": "../no-such-library",
+                    "book_uuid": "x", "ordinal": 1, "status": "draft",
+                    "engine_min_version": "0.1.1"}),
+        encoding="utf-8")
+    r = hook("session-start.sh")
+    assert r.returncode == 0
+    assert "Series:" not in r.stdout

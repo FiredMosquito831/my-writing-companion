@@ -72,6 +72,21 @@ if [ -n "$CH" ]; then
   OUTPUT+="Resume: manuscript/chapters/chapter-$(printf '%02d' "$CH_NUM").md (status: ${CH_STATUS:-unknown}; ${OUTLINE_STATUS}).${NL}"
 fi
 
+# Series layer (v0.2.0): one-line series state summary, fail-open.
+# Only when the book is linked (.vellum/series-link.json exists) and the
+# library engine is reachable. The library root is read from the sidecar
+# JSON via python (never a bash JSON grep — brittle on Windows/UTF-8).
+SERIES_LINE=""
+if [ -f "$ROOT/.vellum/series-link.json" ]; then
+  if PY=$(vellum_py) && [ -f "$VELLUM_SCRIPTS_DIR/library.py" ]; then
+    LIBROOT="$(vellum_run "$PY" -c 'import json,os,sys; d=json.load(open(sys.argv[1],encoding="utf-8")); r=d.get("series_root",""); p=os.path.normpath(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[1]))),r)); print(p if os.path.isdir(p) else "")' "$ROOT/.vellum/series-link.json" 2>/dev/null || true)"
+    if [ -n "$LIBROOT" ]; then
+      SERIES_LINE="$(vellum_run "$PY" "$VELLUM_SCRIPTS_DIR/library.py" state --card-line --root "$LIBROOT" "$ROOT" 2>/dev/null || true)"
+    fi
+  fi
+fi
+[ -n "$SERIES_LINE" ] && OUTPUT+="Series: ${SERIES_LINE}${NL}${NL}"
+
 if [ -n "$OUTPUT" ]; then
   printf '%s' "$OUTPUT"
   exit 0

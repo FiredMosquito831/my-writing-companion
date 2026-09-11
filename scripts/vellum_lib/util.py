@@ -142,7 +142,7 @@ def hash_mismatches(root):
     if not os.path.exists(hp):
         return list(DERIVED_FILES)
     try:
-        with open(hp, "r", encoding="utf-8") as f:
+        with open(hp, "r", encoding="utf-8-sig") as f:
             doc = json.load(f)
     except Exception:
         return list(DERIVED_FILES)
@@ -234,6 +234,11 @@ def parse_frontmatter(text, path="<text>"):
     and single-level nested maps (`holders:`, `custody:`, `axes:`, ...).
     """
     lines = text.split("\n")
+    # Tolerate a UTF-8 BOM on line 0 (a BOM'd `---` opener would otherwise
+    # make the whole frontmatter invisible — matched entities degrade to
+    # [?] ambiguity rows and joins silently half-apply).
+    if lines and lines[0]:
+        lines[0] = lines[0].lstrip("﻿")
     if not lines or not re.match(r"^---\s*$", lines[0].rstrip("\r")):
         return {}, text, 1
     fm = {}
@@ -278,7 +283,8 @@ def parse_frontmatter(text, path="<text>"):
                 entry = {}
                 for part in _split_flow_map(val[1:-1]):
                     k, _, v = part.partition(":")
-                    entry[k.strip()] = _scalar(_strip_comment(v.strip()))
+                    entry[_unquote(k.strip())] = \
+                        _scalar(_strip_comment(v.strip()))
                 fm[key] = entry
             elif val == "":
                 fm[key] = None  # may become a nested map or block list
@@ -343,14 +349,27 @@ def parse_frontmatter(text, path="<text>"):
 
 
 def _split_flow_map(inner):
+    """Split a flow map body on top-level commas. Quote-aware (a comma
+    inside a quoted value is content, not a separator) and depth-aware for
+    nested braces."""
     parts, cur, depth = [], "", 0
+    in_s = in_d = False
     for ch in inner:
-        if ch in "'\"":
+        if ch == "'" and not in_d:
+            in_s = not in_s
             cur += ch
-        elif ch == "," and depth == 0:
+        elif ch == '"' and not in_s:
+            in_d = not in_d
+            cur += ch
+        elif ch == "," and depth == 0 and not in_s and not in_d:
             parts.append(cur)
             cur = ""
         else:
+            if not in_s and not in_d:
+                if ch == "{":
+                    depth += 1
+                elif ch == "}":
+                    depth -= 1
             cur += ch
     if cur.strip():
         parts.append(cur)
@@ -449,7 +468,7 @@ def load_exemptions(root):
     if not os.path.exists(p):
         return {"schema_version": 1, "exemptions": []}
     try:
-        with open(p, "r", encoding="utf-8") as f:
+        with open(p, "r", encoding="utf-8-sig") as f:
             doc = json.load(f)
     except Exception:
         return {"schema_version": 1, "exemptions": []}
@@ -541,7 +560,7 @@ def load_config(root):
     p = project_file(root, "kb", "project-config.json")
     if os.path.exists(p):
         try:
-            with open(p, "r", encoding="utf-8") as f:
+            with open(p, "r", encoding="utf-8-sig") as f:
                 doc = json.load(f)
             if isinstance(doc, dict):
                 cfg.update({k: v for k, v in doc.items() if k in cfg})

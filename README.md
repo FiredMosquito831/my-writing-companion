@@ -13,7 +13,7 @@ Everything else advisory — and silent when clean.
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org)
 [![Claude Code plugin](https://img.shields.io/badge/Claude_Code-plugin-8A5CF6.svg)](https://claude.com/claude-code)
 
-[Install](#-install) · [Quickstart](#-quickstart-your-first-session) · [Gate model](#-the-gate-model) · [Architecture](#️-architecture) · [FAQ](#-faq)
+[Install](#-install) · [Quickstart](#-quickstart-your-first-session) · [Gate model](#-the-gate-model) · [Library & series (v0.2.0)](#-library--series-layer-v020) · [Architecture](#️-architecture) · [FAQ](#-faq)
 
 </div>
 
@@ -42,6 +42,7 @@ Vellum replaces wishes with machinery:
 | 🤫 | **Advisory by default** | Prose tells, continuity lints, voice drift — they surface only when they have something to say, and stay silent when clean. |
 | 🎙️ | **Your voice, measured** | Style profiles built from *your* prose samples, with drift detection against a measured baseline. Per-character dialogue fingerprints catch character voices drifting into one. Style bans never override your measured voice. |
 | 🕵️ | **Readers who can't flatter you** | The blind reader sees your chapter and nothing else — no outline, no plan, no context to be fooled by. The beta reader scores before export; a hard PASS or the export waits. |
+| 📚 | **Series-aware (v0.2.0)** | An optional library/series layer for multi-book canon: a series bible with per-book value maps, a retcon lifecycle that records your words verbatim, published books frozen by default. Findings stay advisory — the gates stayed three. |
 | 🪟 | **Windows-first, dependency-light** | No Node, no pip, no WSL, no build step. Python ≥ 3.8 stdlib only. Tested on `ubuntu-latest` *and* `windows-latest` CI. |
 
 ## 📦 Install
@@ -96,15 +97,39 @@ Four layers, deliberately separated:
 1. **The deterministic engine** — `scripts/vellum` + `scripts/vellum_lib/`. Python ≥ 3.8, stdlib-only: no pip, no Node, no build. It absorbs every check no LLM should pay for — state rebuild/check, ledger continuity (dead characters, promise ordering, knowledge boundaries, prop custody, clock monotonicity), word bands, bible validation, measured style stats, context packing, exemptions, and the export build (markdown bundle + stdlib EPUB). `project-setup` copies it into your novel repo so it runs from the project root.
 2. **Hooks** — harness-enforced. The outline gate (Write/Edit and Bash paths) blocks unapproved prose. The post-write prose net scans drafts and stays silent when clean. Session lifecycle: state card on start, snapshot before compact, pending-capture reminder on stop, mechanical close-out when the writer subagent finishes.
 3. **Agents** (16) — the **muse** coordinates: it owns the gates (from disk artifacts only) and routes every specialist — outliner, writer, critics, blind/beta/cold readers, kb-lead, disruptor, style-creator. Critics and readers are read-only by frontmatter. The writer writes only under `manuscript/` and `work/drafts/`. Critique, drafting, and memory-update never share a context.
-4. **Skills** (32) — the methodology container: craft references, ledger schemas, gate rubrics, the cold-read protocol, demolition, voice work. Resources load on demand.
+4. **Skills** (34) — the methodology container: craft references, ledger schemas, gate rubrics, the cold-read protocol, demolition, voice work, the series-layer operator's manual, and the series-bible data-dialect reference. Resources load on demand.
 
 ### What it installs
 
 - **`agents/`** — 16 agents: muse, outliner, writer, critic, editor, blind-reader, beta-reader, cold-reader, kb-lead, disruptor, style-creator, continuity-checker, character-sim, reader-sim, brainstormer, web-researcher.
-- **`skills/`** — 32 skills, including `story-ledgers`, `gates`, `style-guardrails`, `voice`, `cold-read`, `demolition`, `export`, `kb-integrity`, `project-setup`.
-- **`commands/`** — `/vellum:init`, `/vellum:write-chapter`, `/vellum:status`, `/vellum:cold-read`, `/vellum:retune`, `/vellum:export`, `/vellum:dismiss`.
+- **`skills/`** — 34 skills, including `story-ledgers`, `gates`, `style-guardrails`, `voice`, `cold-read`, `demolition`, `export`, `kb-integrity`, `project-setup`, and the two new v0.2.0 skills: the `series` operator's manual and the `series-bible` data-dialect reference for the library layer.
+- **`commands/`** — `/vellum:init`, `/vellum:write-chapter`, `/vellum:status`, `/vellum:cold-read`, `/vellum:retune`, `/vellum:export`, `/vellum:dismiss`, and `/vellum:series` for the library layer.
 - **`hooks/`** — 7 hook scripts across 6 lifecycle events (details in [`hooks/README.md`](hooks/README.md)).
-- **`templates/`** — the schemas your project is seeded with: chapter frontmatter, ledgers, state card, scene cards, cold-read kit, project config, measured baseline.
+- **`templates/`** — the schemas your project is seeded with: chapter frontmatter, ledgers, state card, scene cards, cold-read kit, project config, measured baseline, and the retcon plan template for series work.
+
+## 📚 Library & series layer (v0.2.0)
+
+**What it is.** An optional layer for authors writing a series, so canon is carried forward explicitly instead of re-invented book by book. The library lives **outside** every book project — `project-setup` never creates one, and `library init` refuses to run inside a book — so a v0.1.1 single-book project keeps working byte-identically whether the layer is installed or not, and whether any book is linked.
+
+**What it stores.** The series root holds `library.json` (manifest), `series/bible.json` (the single source of truth for canon, with per-field `by-book` value maps — no log-walking, no `canon:` mirror in any book file), `series/retcons.jsonl` (append-only audit log that records your words verbatim), `series/exemptions.json` (series-scope dismissals, never written into a book), and human-owned `series/errata.md`. A linked book gets only an inert pointer sidecar, `.vellum/series-link.json`, plus an optional opt-in `series-id:` line on entity frontmatter.
+
+**How you work it.** Run `/vellum:series` and the muse routes you through the `series` skill. The engine subcommands (all `--root <library-root>`, no walk-up discovery) are:
+
+| Subcommand | Purpose |
+|---|---|
+| `library init <root>` (`--root <root>` also accepted) | Create the library tree outside any book project. |
+| `library link <book-root>` / `unlink` | Attach or detach a book; link is idempotent and crash-recoverable. |
+| `library validate` | Read-only integrity check (schemas, half-linked states, refs, `series-id:` joins, errata refs); `--fix` repairs sidecars. |
+| `library bootstrap <book-root> [--plan\|--apply]` | Deterministic canon capture: exact / alias / `[?]` match tiers. `[?]` rows write nothing until you resolve them; `--apply` requires an approved plan. |
+| `library retcon-check <book-root>` | Run the detection catalog (dead-character reanimation, open-thread carry, knowledge anachronism, canon divergence, …) — read-only, findings are advisory. |
+| `library retcon-plan <book-root>` | Draft a retcon plan report from `templates/retcon-plan.md`. |
+| `library retcon --apply <plan-file>` | Apply an approved plan row-by-row; refuses without `approved: true` and your verbatim words on every row. |
+| `library state <book-root>` | Print the series state card (also injected into `vellum state` when a book is linked). |
+| `library timeline` | Emit the stable `E###` master timeline (never renumbered). |
+| `library handoff <book-root>` | Generate the next book's handoff: frozen canon, iron facts, do-not-re-explain register, open retcons, errata posture. |
+| `library dismiss <finding-id> --reason "…"` | Record a series-scope dismissal in your own words. |
+
+**Doctrine.** The three hard gates stay three — series findings are advisory and the layer adds no fourth gate. Book status is `draft | published | archived`: published canon is frozen (the default merge is *retcon record required* — the draft loses, never later-wins), and `archived` books are fully quiet. A linked book's `kb/story.md`, `CLAUDE.md`, and hooks are never edited by the layer, and no book-side schema bump is required.
 
 <details>
 <summary><strong>🗂️ State files explained</strong> (what's yours, what's the engine's)</summary>
@@ -162,7 +187,11 @@ Yes. `project-setup` works on existing folders, and the state engine builds its 
 **How is this different from just prompting Claude Code?**
 Prompting asks the model to be consistent. Vellum enforces it: hooks that can't be talked past, a Python engine that checks what code can check, agents whose permissions make contamination impossible, and state that survives context compaction.
 
-## 📈 Status: v0.1.1
+## 📈 Status: v0.2.0
+
+New in v0.2.0, per [`library-spec.md`](../library-spec.md): the optional **library/series layer** — the `scripts/library.py` entry point backed by three series modules (`scripts/vellum_lib/series_cli.py`, `scripts/vellum_lib/series_bible.py`, `scripts/vellum_lib/series_checks.py`), the `vellum:series` skill with its agent-facing detection-catalog reference, the retcon-plan template, the `/vellum:series` command, and a fail-open series line in the session-start hook for linked books. The release suite has **155 passing tests** (120 engine/hook tests plus 35 series follow-up tests). Compatibility is enforced, not promised: a byte-identity golden suite runs the full v0.1.1 command surface on a linked project and asserts identical output, and an inert-to-old-engine test deletes the new modules and re-runs the surface. See [Library & series layer](#-library--series-layer-v020) above and [DESIGN.md §18](DESIGN.md).
+
+### v0.1.1 record
 
 Implemented per [DESIGN.md](DESIGN.md): 16 agents, 32 skills, 7 commands (including `/vellum:init`), 7 hooks, the complete stdlib engine, templates, **98 passing tests** on a seeded fixture project, and CI on two operating systems. An end-to-end paper-run exercised every gate, hook, and engine path on Windows.
 

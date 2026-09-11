@@ -32,6 +32,15 @@ live in `kb/vocab.md`; domain terms live beside the domain they govern, such as
 **Issues**: tracked writing problems that span multiple chapters (recurring
 tics, pacing patterns, continuity errors). See the story-memory skill.
 
+**Series scope (optional)**: when the book is linked to a series library,
+the kb is still the book's memory — but series canon lives in the
+library's `series/bible.json` and is written only by the engine. Never
+hand-edit bible state, never add a `canon:` mirror to a kb page; a joined
+entity page carries only the opt-in `series-id:` frontmatter key, and
+editing that page deliberately makes its series exemptions stale
+(re-firing their findings) so the change is re-reviewed. See
+`/series-bible` for the schema and `/series` for the command surface.
+
 ## Page Conventions
 
 ### One Concept Per Document

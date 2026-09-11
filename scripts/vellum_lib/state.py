@@ -59,7 +59,7 @@ def _voice_debt(root):
     open_items = 0
     if os.path.exists(p):
         try:
-            with open(p, "r", encoding="utf-8") as f:
+            with open(p, "r", encoding="utf-8-sig") as f:
                 doc = json.load(f)
             open_items = sum(1 for it in doc.get("items", [])
                              if it.get("status") == "open")
@@ -139,7 +139,8 @@ def _build_card(root, chapters, characters, promises, questions, knowledge,
     L.append("## Open promises & questions")
     L.append("")
     open_promises = [p for p in promises
-                     if p["fm"].get("status") in ("planned", "planted", "reinforced")]
+                     if p["fm"].get("status") in
+                     ("planned", "planted", "reinforced")]
     open_promises.sort(key=lambda p: util.chapter_num_val(p["fm"].get("planted-in")) or 0)
     for p in open_promises[:5]:
         L.append(_promise_line(p))
@@ -246,6 +247,34 @@ def _build_card(root, chapters, characters, promises, questions, knowledge,
                  "status: accepted; complete the capture close-out before the "
                  "next chapter.")
     L.append("")
+    # Optional series layer: importing it is fail-open so deleting the
+    # v0.2.0 modules leaves the v0.1.1 state output byte-identical.
+    try:
+        from . import series_bible
+        series_section = series_bible.state_card_section(root)
+    except Exception:
+        series_section = None
+    if series_section:
+        # The series card must never push the whole card over the 12KB hard
+        # cap: a linked book whose own sections already fill the card would
+        # otherwise freeze (card_over_cap) purely from series-driven bloat,
+        # with remediation advice ("cut prose in kb/") that cannot fix it.
+        # Give the injected section the remaining budget, capped at 4KB.
+        # The budget must also hold the truncation marker series_bible
+        # appends when the section overflows: a series section larger than
+        # the marker is skipped entirely, because emitting a truncated
+        # section would push the whole card over the hard cap and freeze
+        # the rebuild into card_over_cap with unfixable remediation advice.
+        base = "\n".join(L) + "\n"
+        budget = (STATE_CARD_MAX_BYTES
+                  - len(base.encode("utf-8"))
+                  - len("\n".encode("utf-8")))
+        max_series = min(4 * 1024, max(budget, 0))
+        if max_series > 0:
+            series_section = series_bible.state_card_capped_with_budget(
+                series_section, max_series)
+            if series_section:
+                L.append(series_section)
     return "\n".join(L)
 
 
@@ -397,7 +426,7 @@ def check(root, target=None):
         die("state files missing - run 'python scripts/vellum state rebuild' "
             "before starting a chapter.")
     try:
-        with open(tp, "r", encoding="utf-8") as f:
+        with open(tp, "r", encoding="utf-8-sig") as f:
             tracking = json.load(f)
     except Exception:
         die("state/_tracking-state.json is unparseable - run 'python scripts/"

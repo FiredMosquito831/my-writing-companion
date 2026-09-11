@@ -1,6 +1,6 @@
 # VALIDATION
 
-The design lineage, validation record, and test results for Vellum. Design and validation record for v0.1.0 (2026-09-09); the paper-run findings were fixed and released as v0.1.1 (2026-09-10, see §4–§6).
+The design lineage, validation record, and test results for Vellum. Design and validation record for v0.1.0 (2026-09-09); the paper-run findings were fixed and released as v0.1.1 (2026-09-10, see §4–§6); the optional library/series layer shipped as v0.2.0 (2026-09-10, see §5 changelog and [`library-spec.md`](../library-spec.md)).
 
 ## 1. Design lineage: base + grafts
 
@@ -71,6 +71,48 @@ Ranked as the paper-run reported them; all were LLM-side glue or UX issues, not 
 Also fixed in the same pass (fresh audit discrepancies): DESIGN §6.2's `chapter-maintenance.sh` row was stale against the shipped implementation — reworded to the actual semantics (the mechanical close-out fires at acceptance from `check-prose-after-write.sh`; `chapter-maintenance.sh` is an advisory writer-stop pre-pass; `state rebuild` derives `pending_capture` from chapter status, no hook clears it); DESIGN §13 step 4 aligned; and DESIGN §4.2 now records the shipped marketplace name (`my-writing-companion`, so installs resolve as `vellum@my-writing-companion`) instead of the spec-literal `vellum` — the plugin name, which drives `/vellum:` prefixes, was already correct.
 
 ## 5. Changelog
+
+### v0.2.0 (2026-09-10) — the library / series layer
+
+Implemented per [`library-spec.md`](../library-spec.md) (final spec, post-judge absorption: Design B's skeleton + A's transaction discipline + C's freeze doctrine; all 47 judge-flagged weaknesses addressed in the spec's §16 ledger). The layer is **optional**: a v0.1.1 single-book project keeps working byte-identically whether or not the library is installed and whether or not a book is linked — compatibility is enforced by tests (below), not promised.
+
+**Engine (scripts/)**
+
+- New `scripts/library.py` — engine entry point for all `library` subcommands (`init`, `link`, `unlink`, `validate`, `bootstrap`, `retcon-check`, `retcon-plan`, `retcon --apply`, `state`, `timeline`, `handoff`, `dismiss`), dispatched by `vellum_lib/series_cli.py`. Every subcommand takes `--root <library-root>` (no walk-up discovery); fixed exit codes 0 clean / 1 findings-or-plan / 2 usage-schema error; findings are informational — the layer adds **no fourth gate**.
+- New `scripts/vellum_lib/series_bible.py` — bible load/validate, per-field `by-book` resolution (§11 effective-at-ordinal, no log walk), timeline index. A separate series dialect; the v0.1.1 `vellum_lib/bible.py` REQUIRED/ENUMS registry is untouched.
+- New `scripts/vellum_lib/series_checks.py` — the §10 detection catalog (deceased-as-of-start, open-thread carry, world-fact knowledge anachronism, canon divergence with iron-fact elevation, unqualified-ref, orphan-book-ref, id-mismatch, half-linked, retcon-log-orphan, established-ref-missing), deterministic checks counted separately from judgment-flagged rows.
+- Machine state is all JSON (`library.json`, `series/bible.json`, `series/exemptions.json`, append-only `series/retcons.jsonl`); writes serialize through `library-root/.lock` (30 s contention timeout → exit 2); `library init` refuses inside a book project; `link` is sidecar-first and idempotent-completing (half-state recoverable by `library validate`).
+
+**Skill, command, template**
+
+- New skill `vellum:series` (`skills/series/SKILL.md` + `references/checks.md`): the library-layer workflow and operator's manual — retcon lifecycle (plan → author approval with verbatim words → per-row apply), the detection catalog in agent-facing copy, the do-not-re-explain register, handoff generation. No gate logic.
+- New skill `vellum:series-bible` (`skills/series-bible/SKILL.md`): the bible schema and data-dialect reference for kb-lead (field encodings, coordinate conventions, effective-at-N).
+- New command `/vellum:series` (`commands/series.md`): routes to the skill and documents the twelve `library` subcommands with their contracts.
+- New template `templates/retcon-plan.md`: the plan report format whose `approved: true` frontmatter plus non-empty verbatim `author_words` per row are what `library retcon --apply` requires.
+- Cross-references: `kb-integrity` notes the series companions for linked books; `story-ledgers` documents the opt-in `series-id:` entity-frontmatter join key. Book-local command contracts unchanged.
+
+**Hooks**
+
+- `hooks/scripts/session-start.sh` (fail-open): for a linked book, appends a one-line series state summary via an engine one-liner (`library.py state --card-line`), stderr discarded; on any error (missing root, engine-copy lag, crash) the line is silently omitted and session start is never blocked. Unlinked books: byte-identical v0.1.1 behavior.
+
+**Compatibility contract (tests)**
+
+- Byte-identity golden suite (library-spec §17 T1–T3): the full v0.1.1 command surface (`vellum state` card with its generated timestamp normalized and the injected series section isolated per T3, `ledger check`, `bible validate`, `wordcount`, `knowledge --as-of`, cold-read hooks) asserts identical stdout + file hashes on the fixtures before link, after link, after bootstrap `--apply` (only `series-id:` lines added), and after a retcon `--apply`; an inert-to-old-engine test (T2) deletes the new modules and re-runs the v0.1.1 verbs unchanged. Plus T4–T12: link/unlink lifecycle, bootstrap match tiers (prose names never match), retcon transactions (per-row all-or-nothing, `series:retcon-log-orphan` recovery), the detection catalog (positive + negative fixtures), freeze doctrine (`published` = retcon-record-required default, `archived` = fully quiet), exemption entity-hash staleness, version tolerance (unknown sidecar schema → exit 2; engine-copy lag advisory), `.lock` concurrency, and the per-command exit-code table.
+
+**Docs, packaging**
+
+- README: new Library & series layer section, v0.2.0 highlights row and status; DESIGN.md: new §18 (library/series semantics) plus file-tree, engine-contract, and command-list updates; this changelog.
+- Version 0.2.0 in `.claude-plugin/plugin.json` and `marketplace.json` (metadata + plugin entry).
+- `scripts/ci/lint_vellum.py` clean after the release.
+
+**Validation record.** The v0.2.0 build went through the same adversarial pattern as the v0.1.0 build: independent validators, then a fix round, then independent scenario verification. **86 validation findings were logged and all 86 were fixed** across three multi-lens validator rounds over the new engine modules, skill/command/template layer, and hooks (round-by-round fix verification: suite grew 117 → 132 → 146 → 147 passing through the fix cycles; each fix round re-ran the full suite plus lint). Test-phase results, all executed (not read):
+
+1. **Full lifecycle scenario (two-book sandbox).** `library init` refused inside a book (exit 2), link of a `published` and a `draft` book, bootstrap `--plan`/`--apply` on both books (ambiguity rows written nothing until resolved; unapproved `--apply` refused), deliberate retcons fired `series:deceased-as-of-start` and `series:canon-divergence` with `series_scope: true` and exit 1 — no blocker, no fourth gate. Freeze doctrine verified live: a plan touching book 1's frozen value was refused; an approved retcon flushed only the targeted exemption, which re-fired once when the underlying fact changed; a hash-stale dismissal re-fired after a direct kb edit. Final `validate`, `state`, `timeline`, `handoff` all clean. Sandbox: `ultra-writing-plugin/sandbox-v02` (library `aethelgard-library`, books `book1`/`book2`).
+2. **Migration test (v0.1.1 book → new library).** A fresh v0.1.1-shaped project was linked to a new series library: no data loss (`kb/story.md` sha256 byte-identical pre/post; joined entities differ only by the added `series-id:` line, proven by hash comparison), `state rebuild`/`state check` green post-migration, the full v0.1.1 command surface byte-identical pre/post link, and the lifecycle probes (half-link recovery, unlink/re-link, retcon-check advisory-only, fail-open hook) all passed. Sandbox: `ultra-writing-plugin/sandbox-migration`.
+3. **v0.1.1 regression run (no-regression verdict).** The v0.2.0 working tree versus v0.1.1 (git `d62fc14`) on an identically seeded series-free single-book project: full engine surface and all hooks identical in stdout/stderr/exit codes (only the rebuild timestamp normalized), finding-key sets byte-identical (zero `series:*` keys), engine-written files identical, zero series files created. Sole delta: the intentional `vellum engine 0.2.0` version string.
+4. **Windows path torture test.** Spaces, drive letters (incl. cross-drive links), 16-level nesting at 262-char paths, CRLF, detached-revival, and error paths all passed. Found and fixed, each with a regression test in `tests/test_series_followup.py` and re-verified end-to-end: **F1** a BOM'd kb entity silently half-joined (frontmatter invisible, no `series-id` written, `validate` clean) — BOM tolerated on read, injection now fails loud with a preflight that refuses the whole `--apply`; **F2** piped stdout was cp1252 on Windows — engine streams now force UTF-8 at import; **F3** BOM in engine-owned JSON bricked every library command — reads now use `utf-8-sig`; an unreadable sidecar is reported as its own finding, not misdiagnosed as stale; **F4** the yaml-lite flow-map parser split inside quoted values and never unquoted keys, blocking `--apply` on comma-bearing resolution notes — parser is now quote-aware; plus **S1** spec §15 migration examples omitting the mandatory `--root` — spec amended. Torture workspaces were cleaned up after verification.
+
+**Final state at release:** **155 passed** (120 engine/hook + 35 series follow-up), `scripts/ci/lint_vellum.py` clean, `vellum --version` reports `vellum engine 0.2.0`.
 
 ### v0.1.1 (2026-09-10)
 

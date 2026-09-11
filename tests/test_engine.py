@@ -1009,3 +1009,564 @@ def test_revision_status_malformed_row_reported(engine, project, findings):
     _write_plan(project,
                 "REV-001 | cold-read:CR-001 | ch 3 | big-picture | high | open\n")
     assert any(f["key"] == "revision:REV-001-malformed" for f in findings("revision", "status"))
+
+
+# ---------------------------------------------------------------------------
+# library / series layer (library-spec.md section 17)
+# ---------------------------------------------------------------------------
+#
+# The `library` fixture (conftest.py) seeds a two-book series library:
+# book 1 (published, ordinal 1) and book 2 (draft, ordinal 2) sharing one
+# series/bible.json outside both book roots. The seed plants deliberate
+# series retcons the detection catalog must catch:
+#   - char:uncle-radu deceased as of book 2's start yet cast in chapter-01
+#   - a world-level knowledge fact claiming audience-learned-in 3:chapter-01
+#     (learned in a later book than the one using it: anachronism) next to a
+#     book-local bare chapter-03 fact (carve-out)
+#   - the vault promise still open in the draft though established in the
+#     published book 1 (open-thread carry, fires in both books)
+#   - char:lena-popescu.status divergence (book kb 'grieving' vs canon
+#     'alive') and an iron-clash on the role field
+#   - retcon R002 recorded in retcons.jsonl but not applied to the bible
+#     (retcon-log-orphan) and an established-in ref to a missing chapter
+#   - an alias-joined entity (character-radu) with a mismatched kb id
+#   - a shared-bible character (Maria) cast in book 2 without series-id
+# Clean cases the checks must pass:
+#   - character-radu appears in chapter-02 `mentions:` (mentions exempt)
+#   - knowledge-city-map's bare `chapter-03` audience-learned-in is
+#     current-book-local, never cross-book
+
+EXPECTED_BOOK2_SERIES_KEYS = {
+    "series:deceased-as-of-start:char:uncle-radu:2:chapter-01",
+    "series:open-thread-carry:promise:the-vault-promise:2",
+    "series:knowledge-anachronism:knowledge:academy-founded:2",
+    "series:canon-divergence:char:lena-popescu:status:2",
+    "series:iron-clash:char:lena-popescu:role:2",
+    "series:unqualified-ref:errata:chapter-04",
+    "series:id-mismatch:character-radu:2",
+    "series:retcon-log-orphan:prop:brass-key:R002",
+    "series:established-ref-missing:prop:brass-key:1:chapter-09",
+    "series:unlinked-cast:char:maria-popescu:2:chapter-02",
+}
+
+EXPECTED_BOOK1_SERIES_KEYS = {
+    "series:open-thread-carry:promise:the-vault-promise:1",
+    "series:canon-divergence:prop:brass-key:location:1",
+    "series:unqualified-ref:errata:chapter-04",
+    "series:retcon-log-orphan:prop:brass-key:R002",
+    "series:established-ref-missing:prop:brass-key:1:chapter-09",
+}
+
+
+def _library_findings(library_engine, book_root, *extra):
+    r = library_engine("retcon-check", "--root", ".", str(book_root), *extra)
+    out = [json.loads(l) for l in r.stdout.splitlines()
+           if l.startswith("{")]
+    return r, out
+
+
+def test_retcon_check_emits_exact_series_keys(library_engine, library_books):
+    r, fs = _library_findings(library_engine, library_books[1])
+    assert r.returncode == 1, r.stderr
+    assert _keys(fs) == EXPECTED_BOOK2_SERIES_KEYS
+    # additive finding fields, no schema-version bump (spec 16-C2).
+    # `book` carries the ordinal the finding pertains to: the checked book
+    # for catalog rows, the referenced ordinal for bible-coordinate rows.
+    for f in fs:
+        assert f["series_scope"] is True
+        assert isinstance(f["book"], int)
+        assert f["audit"] == "series"
+    # deterministic vs judgment split counted separately (spec 16-C8/L8)
+    assert ("library retcon-check: 9 deterministic findings, 1 "
+            "judgment-flagged (muse/kb-lead review)") in r.stderr
+    unlinked = [f for f in fs if f["key"].startswith("series:unlinked-cast")]
+    assert unlinked[0]["resolution"] == "judgment"
+    # the iron divergence elevates via the iron-clash key; shared finding
+    # severity stays inside the schema enum (warning, spec 16-C2)
+    iron = [f for f in fs if f["key"].startswith("series:iron-clash")]
+    assert iron[0]["severity"] == "warning"
+
+
+def test_retcon_check_clean_cases_pass(library_engine, library_books):
+    _, fs = _library_findings(library_engine, library_books[1])
+    keys = _keys(fs)
+    # mentions: are exempt everywhere — Radu appears in chapter-02 mentions
+    assert not any("2:chapter-02" in k for k in keys
+                   if k.startswith("series:deceased-as-of-start"))
+    # bare chapter-NN audience-learned-in is current-book-local: no finding
+    assert not any("city-map" in k for k in keys)
+    # per-book promise (no series-id) never enters series checks
+    assert not any("promise-bursary" in k for k in keys)
+    # unpublished draft rows are deterministic, never judgment-flagged
+    div = [f for f in fs
+           if f["key"] == "series:canon-divergence:char:lena-popescu:status:2"]
+    assert "resolution" not in div[0]
+
+
+def test_retcon_check_published_book_judgment_rows(library_engine,
+                                                   library_books):
+    r, fs = _library_findings(library_engine, library_books[0])
+    assert r.returncode == 1, r.stderr
+    assert _keys(fs) == EXPECTED_BOOK1_SERIES_KEYS
+    # freeze doctrine (spec 12): against published canon the divergence is
+    # emitted as judgment with the retcon-record-required default
+    div = [f for f in fs
+           if f["key"] == "series:canon-divergence:prop:brass-key:location:1"]
+    assert div[0]["resolution"] == "judgment"
+    assert "retcon record required" in div[0]["issue"]
+
+
+def test_retcon_check_series_dismissal_and_stale_rearm(library_engine,
+                                                       library_books):
+    b2 = library_books[1]
+    fid = "series:canon-divergence:char:lena-popescu:status:2"
+    r = library_engine("dismiss", "--root", ".", fid,
+                       "--reason", "Lena grieves through book two on purpose.",
+                       "--book-root", str(b2))
+    assert r.returncode == 0, r.stderr
+    _, fs = _library_findings(library_engine, b2)
+    assert fid not in _keys(fs)
+    # series-scope dismissal lives and dies in the library (spec 6)
+    doc = json.loads((library_books[1].parent / "library" / "series"
+                      / "exemptions.json").read_text(encoding="utf-8"))
+    entry = doc["dismissals"][0]
+    assert entry["finding_id"] == fid
+    assert entry["scope"] == "series"
+    assert entry["reason_author_words"] == \
+        "Lena grieves through book two on purpose."
+    assert entry["expires_on_entity_hash"].startswith("sha256:")
+    # a direct kb edit flips the hash: the dismissal goes stale and the
+    # finding re-fires (uniform rule, spec 6.3/16-M2)
+    p = b2 / "kb" / "characters" / "character-lena.md"
+    p.write_text(p.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+    _, fs = _library_findings(library_engine, b2)
+    hit = [f for f in fs if f["key"] == fid]
+    assert hit and "went stale" in hit[0]["issue"]
+
+
+def test_retcon_plan_rows_and_apply_transaction(library_engine, library,
+                                                library_books):
+    b2 = library_books[1]
+    r = library_engine("retcon-plan", "--root", ".", str(b2))
+    assert r.returncode == 1, r.stderr
+    import glob
+    import os
+    plans = sorted(glob.glob(str(library / "reports" / "retcon-plan-*.md")))
+    assert plans
+    plan_text = open(plans[-1], encoding="utf-8").read()
+    assert "approved: false" in plan_text
+    assert "- entity: char:lena-popescu" in plan_text
+    assert "field: status" in plan_text
+    assert '{"1": "alive", "2": "alive"}' in plan_text
+    # apply refusals (spec 8.7)
+    plan = library / "reports" / "retcon-plan-test.md"
+    plan.write_text(
+        "---\napproved: true\nbook_ordinal: 2\n---\n\n## Rows\n\n"
+        "- entity: char:lena-popescu\n  field: status\n"
+        '  new_by_book: {"1": "alive", "2": "grieving"}\n'
+        '  author_words: ""\n', encoding="utf-8", newline="\n")
+    assert library_engine("retcon", "--root", ".", "--apply",
+                          str(plan)).returncode == 2
+    plan.write_text(plan.read_text(encoding="utf-8").replace(
+        "approved: true", "approved: false"), encoding="utf-8",
+        newline="\n")
+    assert library_engine("retcon", "--root", ".", "--apply",
+                          str(plan)).returncode == 2
+    # unparseable new_by_book
+    plan.write_text(
+        "---\napproved: true\nbook_ordinal: 2\n---\n\n## Rows\n\n"
+        "- entity: char:lena-popescu\n  field: status\n"
+        "  new_by_book: not-json\n"
+        '  author_words: "words"\n', encoding="utf-8", newline="\n")
+    assert library_engine("retcon", "--root", ".", "--apply",
+                          str(plan)).returncode == 2
+    # the successful transaction (spec 8.7: one per row)
+    plan.write_text(
+        "---\napproved: true\nbook_ordinal: 2\n---\n\n## Rows\n\n"
+        "- entity: char:lena-popescu\n  field: status\n"
+        '  new_by_book: {"1": "alive", "2": "grieving"}\n'
+        '  coordinate: 2/chapter-01\n'
+        '  author_words: "Lena grieves all through book two."\n',
+        encoding="utf-8", newline="\n")
+    r = library_engine("retcon", "--root", ".", "--apply", str(plan))
+    assert r.returncode == 0, r.stderr
+    log = (library / "series" / "retcons.jsonl").read_text(
+        encoding="utf-8").strip().splitlines()
+    assert len(log) == 3
+    row = json.loads(log[-1])
+    assert row["rid"] == "R003"
+    assert row["kind"] == "fact-change"
+    assert row["author_words"] == "Lena grieves all through book two."
+    assert row["new_by_book"] == {"1": "alive", "2": "grieving"}
+    bible = json.loads((library / "series" / "bible.json").read_text(
+        encoding="utf-8"))
+    field = bible["entities"]["char:lena-popescu"]["fields"]["status"]
+    assert field["by-book"] == {"1": "alive", "2": "grieving"}
+    assert bible["entities"]["char:lena-popescu"]["last_touched"] == "R003"
+    manifest = json.loads((library / "library.json").read_text(
+        encoding="utf-8"))
+    assert manifest["series"]["next_retcon_id"] == 4
+
+
+def test_retcon_apply_published_canon_frozen(library, library_engine):
+    # spec 12: against a published book the author must explicitly override
+    (library / "reports").mkdir(exist_ok=True)
+    plan = library / "reports" / "retcon-plan-frozen.md"
+    body = ("---\napproved: true\nbook_ordinal: 1\n"
+            "override_published: false\n---\n\n## Rows\n\n"
+            "- entity: prop:brass-key\n  field: location\n"
+            '  new_by_book: {"1": "library shelf", "2": "vault"}\n'
+            '  author_words: "The printed book says the shelf."\n')
+    plan.write_text(body, encoding="utf-8", newline="\n")
+    r = library_engine("retcon", "--root", ".", "--apply", str(plan))
+    assert r.returncode == 2
+    assert "override_published" in r.stderr
+    plan.write_text(body.replace("override_published: false",
+                                 "override_published: true"),
+                    encoding="utf-8", newline="\n")
+    r = library_engine("retcon", "--root", ".", "--apply", str(plan))
+    assert r.returncode == 0, r.stderr
+    # touching published-canon wording is recorded as errata (spec 8.7)
+    row = json.loads((library / "series" / "retcons.jsonl").read_text(
+        encoding="utf-8").strip().splitlines()[-1])
+    assert row["kind"] == "errata"
+
+
+def test_archived_book_is_fully_quiet(library, library_engine,
+                                      library_books):
+    # spec 12: archived = frozen for writes, exempt from all findings
+    manifest_path = library / "library.json"
+    doc = json.loads(manifest_path.read_text(encoding="utf-8"))
+    doc["books"][1]["status"] = "archived"
+    manifest_path.write_text(json.dumps(doc, indent=2), encoding="utf-8")
+    r, fs = _library_findings(library_engine, library_books[1])
+    assert r.returncode == 0
+    assert fs == []
+    assert "0 deterministic findings, 0 judgment-flagged" in r.stderr
+
+
+def test_bootstrap_tiers_and_resolution_gate(library, library_engine,
+                                            library_books):
+    import re
+    b2 = library_books[1]
+    # strip the explicit join key: name "Radu" matches the bible alias
+    # whole-string -> alias tier with the id-mismatch advisory (spec 8.5)
+    radu = b2 / "kb" / "characters" / "character-radu.md"
+    radu.write_text(radu.read_text(encoding="utf-8").replace(
+        "series-id: char:uncle-radu\n", ""), encoding="utf-8")
+    r = library_engine("bootstrap", "--root", ".", str(b2))
+    assert r.returncode == 1, r.stderr
+    import glob
+    import os
+    plans = sorted(glob.glob(str(library / "reports" / "bootstrap-plan-*.md")))
+    assert plans and "5 exact, 1 alias, 3 [?]" in r.stderr
+    plan_path = plans[-1]
+    body = open(plan_path, encoding="utf-8").read()
+    assert "- entity: character-radu" in body
+    assert re.search(r"tier: alias\n  series_id: char:uncle-radu\n"
+                     r"  advisory: series:id-mismatch", body)
+    # --apply refuses an unapproved plan (spec 8.5)
+    assert library_engine("bootstrap", "--root", ".", "--apply", plan_path,
+                          str(b2)).returncode == 2
+    # resolution notes required for every [?] row (the author's words)
+    filled = body.replace("approved: false", "approved: true")
+    filled = filled.replace(
+        "tier: ambiguity\n  resolution: \n  author_words: \"\"",
+        "tier: ambiguity\n  resolution: local\n"
+        '  author_words: "These three stay book-local."')
+    open(plan_path, "w", encoding="utf-8", newline="\n").write(filled)
+    open(plan_path, "w", encoding="utf-8", newline="\n").write(
+        filled.replace('author_words: "These three stay book-local."',
+                       'author_words: ""'))
+    assert library_engine("bootstrap", "--root", ".", "--apply", plan_path,
+                          str(b2)).returncode == 2
+    open(plan_path, "w", encoding="utf-8", newline="\n").write(filled)
+    r = library_engine("bootstrap", "--root", ".", "--apply", plan_path,
+                       str(b2))
+    assert r.returncode == 0, r.stderr
+    # the alias row joined and wrote the series-id back
+    assert "series-id: char:uncle-radu" in radu.read_text(encoding="utf-8")
+    # [?] rows resolved to local wrote nothing and promoted no canon
+    vegg = (b2 / "kb" / "characters" / "character-vegg.md").read_text(
+        encoding="utf-8")
+    assert "series-id" not in vegg
+    bible = json.loads((library / "series" / "bible.json").read_text(
+        encoding="utf-8"))
+    assert not any("vegg" in k for k in bible["entities"])
+
+
+def test_sidecar_unknown_schema_version_fails_loud(library, library_engine,
+                                                   library_books):
+    # spec 17 T10: a sidecar declaring an unknown schema_version is a
+    # fail-loud exit 2 for both link and validate - never guessed.
+    sidecar = library_books[1] / ".vellum" / "series-link.json"
+    doc = json.loads(sidecar.read_text(encoding="utf-8"))
+    doc["schema_version"] = 99
+    sidecar.write_text(json.dumps(doc, indent=2), encoding="utf-8")
+    r = library_engine("validate", "--root", ".")
+    assert r.returncode == 2
+    assert "schema_version" in r.stderr
+    r = library_engine("link", "--root", ".", str(library_books[1]))
+    assert r.returncode == 2
+    assert "schema_version" in r.stderr
+
+
+def test_validate_emits_expected_findings(library, library_engine,
+                                          library_books):
+    r = library_engine("validate", "--root", ".")
+    assert r.returncode == 1
+    fs = [json.loads(l) for l in r.stdout.splitlines() if l.startswith("{")]
+    assert _keys(fs) == {
+        "series:engine-copy-lag:2",                       # old scripts/ copy
+        "series:established-ref-missing:prop:brass-key:1:chapter-09",
+        "series:timeline-unparsed-when:E002",
+        "series:established-ref-missing:timeline:E011:1:chapter-03",
+        "series:retcon-log-orphan:prop:brass-key:R002",
+    }
+    # manifest entry without sidecar = half-linked (spec 8.2/8.4)
+    sidecar = library_books[1] / ".vellum" / "series-link.json"
+    sidecar.unlink()
+    r = library_engine("validate", "--root", ".")
+    fs = [json.loads(l) for l in r.stdout.splitlines() if l.startswith("{")]
+    assert "series:half-linked:3f2c9a1e-2222-4aaa-9bbb-000000000002" \
+        in _keys(fs)
+    # --fix regenerates stale book-side sidecars from the manifest
+    r = library_engine("validate", "--root", ".", "--fix")
+    assert sidecar.exists()
+    fixed = json.loads(sidecar.read_text(encoding="utf-8"))
+    assert fixed["book_uuid"] == "3f2c9a1e-2222-4aaa-9bbb-000000000002"
+    assert fixed["ordinal"] == 2
+    r = library_engine("validate", "--root", ".")
+    fs = [json.loads(l) for l in r.stdout.splitlines() if l.startswith("{")]
+    assert not any(k.startswith("series:half-linked") for k in _keys(fs))
+
+
+def test_library_init_refuses_book_project_and_creates_tree(
+        library_engine, library_books, tmp_path):
+    # spec 1.4: never initialized inside a book project
+    r = library_engine("init", "--root", str(library_books[0]))
+    assert r.returncode == 2
+    # clean dir: the full tree per spec 1.1
+    target = tmp_path / "fresh-library"
+    r = library_engine("init", "--root", str(target), "--title",
+                       "Test Series")
+    assert r.returncode == 0, r.stderr
+    assert sorted(p.name for p in target.iterdir()) == \
+        ["handoff", "library.json", "reports", "series"]
+    assert sorted(p.name for p in (target / "series").iterdir()) == \
+        ["bible.json", "errata.md", "exemptions.json", "retcons.jsonl"]
+    manifest = json.loads((target / "library.json").read_text(
+        encoding="utf-8"))
+    assert manifest["kind"] == "vellum-library"
+    assert manifest["schema_version"] == 1
+    assert manifest["books"] == []
+    assert manifest["engine_min_version_global"] == "0.1.1"
+    # a manifest without the kind marker is not a library (fail-loud)
+    (target / "library.json").write_text('{"kind": "other"}',
+                                         encoding="utf-8")
+    r = library_engine("validate", "--root", str(target))
+    assert r.returncode == 2
+
+
+def test_library_link_lifecycle_idempotent_and_half_linked(
+        library, library_engine, library_books, tmp_path):
+    import shutil
+    book = tmp_path / "book-copy"
+    shutil.copytree(str(library_books[0]), str(book))
+    sidecar = book / ".vellum" / "series-link.json"
+    sidecar.unlink()  # start unlinked
+    libroot = tmp_path / "new-library"
+    assert library_engine("init", "--root", str(libroot)).returncode == 0
+    r = library_engine("link", "--root", str(libroot), str(book))
+    assert r.returncode == 0, r.stderr
+    manifest = json.loads((libroot / "library.json").read_text(
+        encoding="utf-8"))
+    sc = json.loads(sidecar.read_text(encoding="utf-8"))
+    assert len(manifest["books"]) == 1
+    assert manifest["books"][0]["book_uuid"] == sc["book_uuid"]
+    assert manifest["books"][0]["ordinal"] == 1
+    assert manifest["books"][0]["status"] == "draft"
+    # uuid lives in manifest + sidecar only — never in kb/story.md
+    assert sc["book_uuid"] not in (book / "kb" / "story.md").read_text(
+        encoding="utf-8")
+    # re-link is idempotent: no duplicate entries (spec 8.2)
+    r = library_engine("link", "--root", str(libroot), str(book))
+    assert r.returncode == 0
+    manifest = json.loads((libroot / "library.json").read_text(
+        encoding="utf-8"))
+    assert len(manifest["books"]) == 1
+    # crash between the two writes: sidecar survives, manifest entry lost;
+    # validate reports the half-state and re-link completes it (spec 16-A4)
+    manifest["books"] = []
+    (libroot / "library.json").write_text(json.dumps(manifest, indent=2),
+                                          encoding="utf-8")
+    r = library_engine("validate", "--root", str(libroot), str(book))
+    fs = [json.loads(l) for l in r.stdout.splitlines() if l.startswith("{")]
+    assert any(k.startswith("series:half-linked") for k in _keys(fs))
+    assert library_engine("link", "--root", str(libroot),
+                          str(book)).returncode == 0
+    manifest = json.loads((libroot / "library.json").read_text(
+        encoding="utf-8"))
+    assert len(manifest["books"]) == 1
+    assert manifest["books"][0]["book_uuid"] == sc["book_uuid"]
+    # unlink removes the sidecar and marks the manifest (spec 8.3)
+    r = library_engine("unlink", "--root", str(libroot), str(book))
+    assert r.returncode == 0
+    assert not sidecar.exists()
+    manifest = json.loads((libroot / "library.json").read_text(
+        encoding="utf-8"))
+    assert manifest["books"][0]["unlinked_at"] is not None
+
+
+def test_unlink_retains_orphan_canon(library, library_engine,
+                                     library_books):
+    # spec 8.3/10 #6: canon remembers detached books
+    r = library_engine("unlink", "--root", ".", str(library_books[0]))
+    assert r.returncode == 0, r.stderr
+    assert "5 orphan canon reference(s)" in r.stderr
+    _, fs = _library_findings(library_engine, library_books[1])
+    orphans = [f for f in fs
+               if f["key"].startswith("series:orphan-book-ref")]
+    assert len(orphans) == 5
+    assert all(f["book"] == 1 for f in orphans)
+
+
+def test_lock_contention_times_out(library, library_engine, monkeypatch):
+    monkeypatch.setenv("VELLUM_LIB_LOCK_TIMEOUT", "1")
+    lock = library / ".lock"
+    lock.write_text("999 contention-test", encoding="utf-8")
+    try:
+        r = library_engine("dismiss", "--root", ".", "series:x:1",
+                           "--reason", "test reason")
+        assert r.returncode == 2
+        assert "locked by another process" in r.stderr
+    finally:
+        lock.unlink(missing_ok=True)
+
+
+def test_series_exit_codes(library_engine, library, library_books):
+    # spec 8 exit table: 2 on usage/schema errors, 0 on clean success
+    assert library_engine().returncode == 2                    # no subcommand
+    assert library_engine("no-such-command").returncode == 2   # unknown verb
+    assert library_engine("retcon-check",
+                          str(library_books[1])).returncode == 2  # no --root
+    assert library_engine("init", "--root",
+                          str(library_books[0])).returncode == 2  # in a book
+    r = library_engine("state", "--root", ".", "--card-line",
+                       str(library_books[1]))
+    assert r.returncode == 0
+    assert r.stdout.startswith("series Aethelgard — this book: ordinal 2 "
+                               "(draft)")
+
+
+def test_timeline_orders_iso_when_and_flags_unparseable(library,
+                                                        library_engine):
+    r = library_engine("timeline", "--root", ".")
+    assert r.returncode == 1
+    lines = [l for l in r.stdout.splitlines() if l.startswith("E")]
+    # structured ISO-8601 `when` sorts; the unparseable row is flagged last
+    assert [l.split(" | ")[0] for l in lines] == ["E001", "E011", "E002"]
+    assert any("[UNPARSEABLE WHEN]" in l for l in lines)
+    assert "unparseable" in r.stderr
+
+
+def test_state_card_fixed_sections_and_cap(library, library_engine,
+                                           library_books):
+    r = library_engine("state", "--root", ".", str(library_books[1]))
+    assert r.returncode == 0, r.stderr
+    card = r.stdout
+    for section in ("## Series state", "do not re-explain", "Open retcons:",
+                    "Iron facts:", "Recent retcons:"):
+        assert section in card
+    assert "Lena Popescu — established in 1/chapter-01" in card
+    assert "- R001 [fact-change] char:lena-popescu" in card
+    assert len(card.encode("utf-8")) <= 12 * 1024
+
+
+def test_handoff_document_generated(library, library_engine,
+                                    library_books):
+    r = library_engine("handoff", "--root", ".", str(library_books[1]))
+    assert r.returncode == 0, r.stderr
+    doc = library / "handoff" / "handoff-3.md"
+    assert doc.exists()
+    text = doc.read_text(encoding="utf-8")
+    for section in ("## Frozen canon snapshot", "## Iron facts",
+                    "## Do-not-re-explain register", "## Open retcons",
+                    "## Errata posture", "## One-line fact register"):
+        assert section in text
+    # frozen canon snapshot: highest-ordinal by-book values
+    assert "location = 'vault' (book 2)" in text
+
+
+def _without_generated_stamp(text):
+    return "\n".join(l for l in text.split("\n")
+                     if not l.startswith("Generated by `vellum state"))
+
+
+def test_vellum_state_series_section_injection(engine, project,
+                                               library_engine, tmp_path):
+    # spec 8.8/13.5/T3: the series card rides the existing `vellum state`
+    # output; an unlinked book's output is byte-identical to v0.1.1.
+    import os
+    assert engine("state", "rebuild").returncode == 0
+    baseline = (project / "state" / "state-card.md").read_text(
+        encoding="utf-8")
+    libroot = tmp_path / "injected-library"
+    assert library_engine("init", "--root", str(libroot)).returncode == 0
+    assert library_engine("link", "--root", str(libroot),
+                          str(project)).returncode == 0
+    assert engine("state", "rebuild").returncode == 0
+    linked = (project / "state" / "state-card.md").read_text(
+        encoding="utf-8")
+    # only the series section is appended; the v0.1.1 card is untouched
+    # (modulo the rebuild timestamp line)
+    assert _without_generated_stamp(linked).startswith(
+        _without_generated_stamp(baseline))
+    assert "## Series state" in linked
+    assert linked.count("## Series state") == 1
+
+
+def test_series_modules_absent_leaves_vellum_state_unchanged(
+        engine, project, plugin_root, library_engine, tmp_path):
+    # spec 17-T2: with the v0.2.0 series modules deleted the full v0.1.1
+    # surface is untouched (fail-open import in state.py).
+    import os
+    assert engine("state", "rebuild").returncode == 0
+    baseline = (project / "state" / "state-card.md").read_text(
+        encoding="utf-8")
+    surface_args = [
+        ("ledger", "check"), ("bible", "validate"), ("wordcount",),
+        ("knowledge", "character-vess", "--as-of", "5"),
+    ]
+    baseline_surface = [(args, engine(*args).returncode,
+                        engine(*args).stdout) for args in surface_args]
+    libroot = tmp_path / "t2-library"
+    library_engine("init", "--root", str(libroot))
+    library_engine("link", "--root", str(libroot), str(project))
+    assert engine("state", "rebuild").returncode == 0
+    linked = (project / "state" / "state-card.md").read_text(
+        encoding="utf-8")
+    assert "## Series state" in linked  # the link is live while modules exist
+    lib_dir = plugin_root / "scripts" / "vellum_lib"
+    renamed = []
+    targets = [lib_dir / "series_bible.py", lib_dir / "series_checks.py",
+               lib_dir / "series_cli.py", plugin_root / "scripts" / "library.py"]
+    try:
+        for p in targets:
+            backup = p.with_name(p.name + ".t2bak")
+            p.rename(backup)
+            renamed.append((p, backup))
+        r = engine("state", "rebuild")
+        assert r.returncode == 0, r.stderr
+        without_surface = [(args, engine(*args).returncode,
+                            engine(*args).stdout) for args in surface_args]
+        assert without_surface == baseline_surface
+        without = (project / "state" / "state-card.md").read_text(
+            encoding="utf-8")
+        # Rebuild stamps the generated-at time; normalize that derived line
+        # while asserting every other v0.1.1 byte is preserved.
+        assert _without_generated_stamp(without) == \
+            _without_generated_stamp(baseline)  # byte-identical otherwise
+    finally:
+        for original, backup in renamed:
+            backup.rename(original)
