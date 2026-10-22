@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block bodyclass %}page-credits{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <div class="wrap">
+    <p class="eyebrow">Credits, validation &amp; license</p>
+    <h1>A tool built by reading twenty others.</h1>
+    <p class="lede">Vellum is authored by <a href="https://github.com/{{ site.author }}">{{ site.author }}</a> as a fork of <a href="https://github.com/haowjy/creative-writing-skills">haowjy/creative-writing-skills</a>. It takes the best verified mechanisms of twenty systems in this space and combines them into one coherent, tested architecture — keeping what worked and fixing what did not.</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="toc" aria-label="On this page">
+    <a href="#about">About</a>
+    <a href="#lineage">Lineage</a>
+    <a href="#validation">Validation</a>
+    <a href="#sources">Sources</a>
+    <a href="#license">License</a>
+  </nav>
+</div>
+
+<article class="article">
+  <div class="wrap">
+
+    <section id="about">
+      <h2>About Vellum</h2>
+      <p class="lede-cap">Vellum exists because the failure modes of long-form AI fiction are not imagination problems. They are accounting problems: what the reader knows, what the character knows, what was promised, what was paid off, what the clock says, who is holding the ring. Those are checkable. A novelist's daily tool should check them and then get out of the way.</p>
+      <p>The design rule is separation of authority. Your prose is ground truth. The knowledge base is durable canon. <code>state/</code> is derived and engine-owned. <code>work/</code> is scratch. Gate verdicts come from artifacts on disk. The author owns approval, acceptance, and dismissal.</p>
+      <p>Vellum ships as a Claude Code plugin: {{ data.counts.commands }} slash commands, {{ data.counts.agents }} agents, {{ data.counts.skills }} skills, and {{ data.counts.hooks }} hooks around a Python ≥ 3.8 stdlib-only engine. It is tested on <code>ubuntu-latest</code> and <code>windows-latest</code>.</p>
+    </section>
+
+    <section id="lineage">
+      <h2>Lineage</h2>
+      <p>The base fork contributed the muse coordinator, stance-isolated subagents, the five-level edit chain, the story-knowledge-base concept, and the craft corpus. It had no deterministic enforcement and no hooks, and it coupled to a private memory tool. Vellum adds a blocking gate layer, a stdlib Python engine, tests and CI, and runs fully on stock Claude Code.</p>
+      <p>Sixteen graft requirements were planned from the other nineteen repositories, then unified into a binding build spec by a chief-architect pass over competing design proposals. The full file-level provenance, licenses, and changes are recorded in <a href="{{ site.repo }}/blob/main/ATTRIBUTION.md">ATTRIBUTION.md</a>.</p>
+    </section>
+
+    <section id="validation">
+      <h2>Validation record</h2>
+      <div class="ref-intro" style="margin-bottom:2rem">
+        <div><span class="num">92</span><span class="lbl">Findings logged &amp; fixed</span></div>
+        <div><span class="num">{{ data.counts.tests }}</span><span class="lbl">Passing tests</span></div>
+        <div><span class="num">2</span><span class="lbl">Operating systems in CI</span></div>
+        <div><span class="num">20</span><span class="lbl">Systems studied</span></div>
+      </div>
+      <p>After the build workstreams completed, the plugin went through three adversarial validate-and-fix rounds with independent multi-lens validators: craft and slop, platform hooks and manifests, Windows portability, and license and security hygiene. <strong>92 findings were logged; all 92 were fixed and verified.</strong> A mechanical lint and an end-to-end paper-run followed; neither found a new engine or gate defect.</p>
+      <p>The paper-run executed the full flow with the real hook scripts and the real engine: outline, gate block, approval, gate pass, drafting, acceptance, capture, and export — including the gate paths on both Write and Bash, the subagent forgery protections, the pivotal blind-read precondition, the acceptance transaction, and the EPUB build.</p>
+      <ul class="plainlist">
+        <li><span class="term">Engine + hooks</span><span>{{ data.counts.tests }} tests, run on <code>ubuntu-latest</code> and <code>windows-latest</code> through GitHub Actions.</span></li>
+        <li><span class="term">Plugin lint</span><span>Deep frontmatter validation, attribution headers, hook manifest parsing, vocabulary leaks, and a size cap — clean.</span></li>
+        <li><span class="term">Compatibility</span><span>A byte-identity golden suite proves the v0.1.1 command surface is unchanged on a linked series project; a second test deletes the series modules and re-runs the surface.</span></li>
+      </ul>
+      <p>The full record — including what is still rough — is in <a href="{{ site.repo }}/blob/main/VALIDATION.md">VALIDATION.md</a>. The build spec, including what was deliberately not built, is in <a href="{{ site.repo }}/blob/main/DESIGN.md">DESIGN.md</a>.</p>
+    </section>
+
+    <section id="sources">
+      <h2>Sources, and what Vellum changed</h2>
+      <p>What follows is the short version. The complete per-file record is in ATTRIBUTION.md.</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th scope="col">Source</th><th scope="col">We took</th><th scope="col">Vellum improves by</th></tr></thead>
+          <tbody>
+            <tr><td><a href="https://github.com/haowjy/creative-writing-skills">haowjy/creative-writing-skills</a><br><span class="tag">base · Apache-2.0</span></td><td>Muse architecture, stance isolation, edit chain, craft corpus</td><td>Adding blocking gates, a deterministic engine, tests and CI; removing private-tool coupling so it runs on stock Claude Code</td></tr>
+            <tr><td><a href="https://github.com/danjdewhurst/story-skills">danjdewhurst/story-skills</a><br><span class="tag">MIT</span></td><td>Bible schema, promise and question ledgers, continuity catalog</td><td>Invoking the checks through hooks rather than a standalone CLI; adding prop custody, clock checks, and timeline-scoped knowledge queries</td></tr>
+            <tr><td><a href="https://github.com/zenstory-ai/oh-story-claudecode">zenstory-ai/oh-story-claudecode</a><br><span class="tag">MIT</span></td><td>Guard hooks, transactional state card</td><td>Portable English implementation, fail-open gates, gate-input forgery protection, Windows coverage and tests</td></tr>
+            <tr><td><a href="https://github.com/conorbronsdon/avoid-ai-writing">avoid-ai-writing</a> + <a href="https://github.com/hardikpandya/stop-slop">stop-slop</a><br><span class="tag">MIT</span></td><td>Detector categories, replacement tables</td><td>Fiction carve-outs and a hard law: style bans cap at the author's measured baseline, so the net never flattens voice</td></tr>
+            <tr><td><a href="https://github.com/simonediroma/claude-ghost-writer">claude-ghost-writer</a><br><span class="tag">MIT</span></td><td>Demolition protocol, voice retune</td><td>Chapter-scoped, logged, declinable demolition; retune inside a measured-voice lifecycle with drift checks</td></tr>
+            <tr><td><a href="https://github.com/epicsagas/Velith">epicsagas/Velith</a><br><span class="tag">Apache-2.0</span></td><td>Beta-reader gate, quality bar</td><td>Readiness thresholds enforced by the engine, with a sha256 export manifest recording which gates passed</td></tr>
+            <tr><td><a href="https://github.com/geobond13/fiction-forge">fiction-forge</a><br><span class="tag">MIT</span></td><td>Cold-read protocol, markdown ledgers</td><td>Subagent-batched cold reads and a rolling issue log unified with the exemption system</td></tr>
+            <tr><td><a href="https://github.com/howells/fiction">howells/fiction</a><br><span class="tag">MIT</span></td><td>Persona critics (Wood, King, Le Guin, Gay)</td><td>Wiring them into the automated pipeline, bound to a shared rubric so verdicts cite criteria</td></tr>
+            <tr><td><a href="https://github.com/rhavekost/author-toolkit">author-toolkit</a><br><span class="tag">MIT</span></td><td>Weiland/Bell beat map, finding schema</td><td>Beats as auditable structure maps wired into planning and audit modes</td></tr>
+            <tr><td><a href="https://github.com/mrigankad/Novel-OS">Novel-OS</a><br><span class="tag">MIT</span></td><td>Dismissed-finding keying, stall detector</td><td>Stdlib Python re-implementation; exemptions re-arm once when the underlying fact changes</td></tr>
+            <tr><td>book-genesis-v4<br><span class="tag">ideas only</span></td><td>The blind-reader gate</td><td>A strictly read-only agent inside the plugin with engine cross-checks</td></tr>
+            <tr><td>Craft theory: Shawn Coyne, Sanderson/Butcher/Writing Excuses, Gaiman/Craig/MorningStar, BubbleCow/Windrow, Michel/Yang/Brei<br><span class="tag">ideas only</span></td><td>Obligatory scenes, try-fail ladders, beta doctrine, revision-letter practice, dialogue stylometry</td><td>Original checkable resources implementing the mechanisms; all prose our own, all ideas credited</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="license">
+      <h2>License</h2>
+      <p>Apache-2.0, inherited from the base fork. The base author's copyright and notice are retained in <a href="{{ site.repo }}/blob/main/LICENSE">LICENSE</a> and <a href="{{ site.repo }}/blob/main/NOTICE">NOTICE</a>. Ported MIT sources keep their notices; unlicensed sources contributed ideas only — no text or code was copied.</p>
+      <p class="muted">Vellum is an independent project. It is not affiliated with or endorsed by the authors of the systems credited above.</p>
+    </section>
+
+  </div>
+</article>
+{% endblock %}

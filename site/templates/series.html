@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block bodyclass %}page-series{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <div class="wrap">
+    <p class="eyebrow">Optional · v{{ site.version }}</p>
+    <h1>Carry canon across books, without a fourth gate.</h1>
+    <p class="lede">The series layer is an optional library that lives outside every book project. It gives a multi-book author a single source of truth for canon, a retcon lifecycle that records your words verbatim, and published books that stay frozen by default.</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="toc" aria-label="On this page">
+    <a href="#what">What it is</a>
+    <a href="#stores">What it stores</a>
+    <a href="#subcommands">Subcommands</a>
+    <a href="#doctrine">Doctrine</a>
+    <a href="#compat">Compatibility</a>
+  </nav>
+</div>
+
+<article class="article">
+  <div class="wrap">
+
+    <section id="what">
+      <h2>What it is</h2>
+      <p class="lede-cap">A series is not a longer novel. It is a canon problem: names, ages, promises, and physical facts have to stay true across books written months or years apart, while each book still has to stand alone for a reader who starts there.</p>
+      <p>Vellum's library layer holds that canon explicitly instead of re-inventing it book by book. It lives <strong>outside</strong> every book project — <code>project-setup</code> never creates one, and <code>library init</code> refuses to run inside a book — so a single-book project keeps working byte-identically whether the layer is installed or not, and whether any book is linked.</p>
+      <p>The layer adds no fourth gate. Its findings are advisory; the three hard gates are unchanged.</p>
+    </section>
+
+    <section id="stores">
+      <h2>What it stores</h2>
+      <p>The library root is the only place series state exists:</p>
+      <ul class="plainlist">
+        <li><span class="term">library.json</span><span>The manifest. <code>kind: "vellum-library"</code>; unknown fields are rejected rather than ignored.</span></li>
+        <li><span class="term">series/bible.json</span><span>The single source of truth for canon, with per-field <code>by-book</code> value maps. The effective value at a book ordinal is a map lookup — no log-walking, no <code>canon:</code> mirror in any book file.</span></li>
+        <li><span class="term">series/retcons.jsonl</span><span>An append-only audit log that records the author's words verbatim, never edited.</span></li>
+        <li><span class="term">series/exemptions.json</span><span>Series-scope dismissals. They never touch a book's <code>kb/exemptions.json</code>.</span></li>
+        <li><span class="term">series/errata.md</span><span>Human-owned reader-facing errata posture, recorded once.</span></li>
+      </ul>
+      <p>A linked book receives only an inert pointer sidecar, <code>.vellum/series-link.json</code>, plus an optional opt-in <code>series-id:</code> line on entity frontmatter. The layer never edits a linked book's <code>kb/story.md</code>, <code>CLAUDE.md</code>, or hooks.</p>
+    </section>
+
+    <section id="subcommands">
+      <h2>The subcommand surface</h2>
+      <p>Run through <code>python scripts/library.py</code>. Every subcommand takes an explicit <code>--root</code>; there is no filesystem discovery.</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th scope="col">Subcommand</th><th scope="col">Purpose</th></tr></thead>
+          <tbody>
+            <tr><td><code>library init &lt;root&gt;</code></td><td>Create the library tree outside any book project. Refuses inside a directory containing <code>kb/</code>, <code>manuscript/</code>, or <code>state/</code>.</td></tr>
+            <tr><td><code>library link &lt;book-root&gt;</code> / <code>unlink</code></td><td>Attach or detach a book. Linking is idempotent and crash-recoverable: sidecar first, manifest second.</td></tr>
+            <tr><td><code>library validate</code></td><td>Read-only integrity check — schemas, half-linked states, refs, <code>series-id:</code> joins, errata refs. <code>--fix</code> repairs sidecars.</td></tr>
+            <tr><td><code>library bootstrap &lt;book-root&gt;</code></td><td>Deterministic canon capture with exact, alias, and <code>[?]</code> match tiers. <code>[?]</code> rows write nothing until you resolve them; <code>--apply</code> requires an approved plan.</td></tr>
+            <tr><td><code>library retcon-check &lt;book-root&gt;</code></td><td>Run the detection catalog — dead-character reanimation, open-thread carry, knowledge anachronism, canon divergence. Read-only and advisory.</td></tr>
+            <tr><td><code>library retcon-plan &lt;book-root&gt;</code></td><td>Draft a retcon plan report from <code>templates/retcon-plan.md</code>.</td></tr>
+            <tr><td><code>library retcon --apply &lt;plan&gt;</code></td><td>Apply an approved plan row by row. Refuses without <code>approved: true</code> and your verbatim words on every row.</td></tr>
+            <tr><td><code>library state &lt;book-root&gt;</code></td><td>Print the series state card. It is injected into <code>vellum state</code> when a book is linked.</td></tr>
+            <tr><td><code>library timeline</code></td><td>Emit the stable <code>E###</code> master timeline, never renumbered.</td></tr>
+            <tr><td><code>library handoff &lt;book-root&gt;</code></td><td>Generate the next book's handoff: frozen canon, iron facts, the do-not-re-explain register, open retcons, errata posture.</td></tr>
+            <tr><td><code>library dismiss &lt;id&gt; --reason "…"</code></td><td>Record a series-scope dismissal in your own words.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Inside Claude Code, <code>/vellum:series</code> routes you through the <code>series</code> skill, which owns the operator's manual and the finding catalog.</p>
+    </section>
+
+    <section id="doctrine">
+      <h2>Doctrine</h2>
+      <div class="grid-2">
+        <article class="card">
+          <h3>The gates stay three</h3>
+          <p>Series findings are advisory and the layer adds no fourth blocker. Exit codes stay <code>0</code> clean, <code>1</code> findings or plan, <code>2</code> usage or schema error.</p>
+        </article>
+        <article class="card">
+          <h3>Published canon is frozen</h3>
+          <p>Book status is <code>draft | published | archived</code>. For published books the default merge is <em>retcon record required</em>: the draft loses, never later-wins. Changing frozen canon needs your explicit override. Archived books are fully quiet.</p>
+        </article>
+        <article class="card">
+          <h3>No invention</h3>
+          <p>Bootstrap matches only frontmatter fields and knowledge-base entity names, never chapter prose. Ambiguous rows are marked <code>[?]</code> and write nothing until you resolve them. The retcon log records your words verbatim.</p>
+        </article>
+        <article class="card">
+          <h3>No hidden coupling</h3>
+          <p>A linked book is not rewritten. The layer adds one inert sidecar and, optionally, a join key. Uninstalling means <code>library unlink</code> per book, then deleting the library root — no hidden state remains.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="compat">
+      <h2>Compatibility, enforced</h2>
+      <p>The series layer had to prove it did not disturb the single-book tool that existed before it. A byte-identity golden suite snapshots the full v0.1.1 command surface before linking, after linking, after bootstrap, and after a retcon; it asserts the outputs are byte-identical except for the opt-in <code>series-id:</code> lines. A second test deletes the series modules and re-runs the same surface unchanged.</p>
+      <p>Read the semantics in <a href="{{ site.repo }}/blob/main/DESIGN.md">DESIGN.md §18</a> and the validation record in <a href="{{ site.repo }}/blob/main/VALIDATION.md">VALIDATION.md</a>.</p>
+    </section>
+
+  </div>
+</article>
+{% endblock %}

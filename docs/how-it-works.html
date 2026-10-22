@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How Vellum works — gates, agents, and the deterministic engine</title>
+  <meta name="description" content="The Vellum gate model in depth: approved outlines, blind-reader verdicts, and beta-reader PASS, enforced by hooks and a deterministic Python engine rather than prompt compliance.">
+  <meta name="keywords" content="Vellum gate model, outline gate, blind reader, beta reader, writing agent architecture, deterministic continuity engine">
+  <meta name="author" content="FiredMosquito831">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <link rel="canonical" href="https://vellum.danubelabs.net/how-it-works.html">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Vellum">
+  <meta property="og:locale" content="en_GB">
+  <meta property="og:title" content="How Vellum works — gates, agents, and the deterministic engine">
+  <meta property="og:description" content="The Vellum gate model in depth: approved outlines, blind-reader verdicts, and beta-reader PASS, enforced by hooks and a deterministic Python engine rather than prompt compliance.">
+  <meta property="og:url" content="https://vellum.danubelabs.net/how-it-works.html">
+  <meta property="og:image" content="https://vellum.danubelabs.net/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Vellum — a working novelist's daily tool for Claude Code">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="How Vellum works — gates, agents, and the deterministic engine">
+  <meta name="twitter:description" content="The Vellum gate model in depth: approved outlines, blind-reader verdicts, and beta-reader PASS, enforced by hooks and a deterministic Python engine rather than prompt compliance.">
+  <meta name="twitter:image" content="https://vellum.danubelabs.net/og.png">
+  <meta name="twitter:image:alt" content="Vellum — a working novelist's daily tool for Claude Code">
+
+  <meta name="theme-color" content="#6c1d24">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/assets/fonts/cormorant-garamond-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/eb-garamond-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/css/site.css">
+  <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@id": "https://vellum.danubelabs.net/#website", "@type": "WebSite", "description": "Vellum is a working novelist\u0027s daily tool for Claude Code: one command for the chapter loop, three hard gates, and an advisory layer that stays silent when clean.", "inLanguage": "en", "name": "Vellum", "url": "https://vellum.danubelabs.net/"}, {"@id": "https://vellum.danubelabs.net/how-it-works.html", "@type": "WebPage", "about": {"@id": "https://vellum.danubelabs.net/#software"}, "description": "The Vellum gate model in depth: approved outlines, blind-reader verdicts, and beta-reader PASS, enforced by hooks and a deterministic Python engine rather than prompt compliance.", "isPartOf": {"@id": "https://vellum.danubelabs.net/#website"}, "name": "How Vellum works \u2014 gates, agents, and the deterministic engine", "url": "https://vellum.danubelabs.net/how-it-works.html"}]}</script>
+</head>
+<body class="page-how">
+  <a class="skip" href="#main">Skip to the text</a>
+
+  <header class="masthead">
+    <div class="topline">
+      <div class="wrap">
+        <span>A Claude Code plugin for novelists</span>
+        <span class="topline-extra">Version 0.2.0 · Apache-2.0 · Windows &amp; Linux</span>
+      </div>
+    </div>
+    <div class="wrap brand-row">
+      <a class="brand" href="/" aria-label="Vellum home">
+        <span class="brand-mark" aria-hidden="true">V</span>
+        <span>
+          <span class="brand-word">Vellum</span>
+          <span class="brand-sub">A novelist's daily tool</span>
+        </span>
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a href="/">Home</a>
+        <a href="/how-it-works.html" aria-current="page">How it works</a>
+        <a href="/install.html">Install</a>
+        <a href="/reference.html">Reference</a>
+        <a href="/series.html">Series layer</a>
+        <a href="/credits.html">Credits</a>
+        <a class="nav-repo" href="https://github.com/FiredMosquito831/my-writing-companion" rel="noopener">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+<header class="page-head">
+  <div class="wrap">
+    <p class="eyebrow">The machinery</p>
+    <h1>How Vellum holds a novel together.</h1>
+    <p class="lede">Vellum is not a prompt collection. It is a small editorial institution: a coordinator, isolated specialists, a deterministic engine, and a hook layer that enforces three rules no one can talk their way around.</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="toc" aria-label="On this page">
+    <a href="#gates">The gate model</a>
+    <a href="#gate-table">Gate detail</a>
+    <a href="#loop">The chapter loop</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#state">State &amp; authority</a>
+    <a href="#advisory">What stays advisory</a>
+    <a href="#windows">Windows</a>
+  </nav>
+</div>
+
+<article class="article">
+  <div class="wrap">
+
+    <section id="gates">
+      <h2>Three hard gates, and why only three</h2>
+      <p class="lede-cap">Ceremony is a cost. Every gate that blocks is a gate the author has to satisfy at the worst possible moment — mid-chapter, at the end of a long drafting session. Vellum spends that authority on exactly three moments where being wrong is expensive, and it buys each gate with a file on disk rather than a promise in chat.</p>
+      <p>Each gate has one artifact, one predicate, and one owner. The artifacts are ordinary markdown files in the project's <code>work/</code> directory. The predicates live in hooks and the engine, not in an agent's instructions. The owner is you: approval, acceptance, and dismissal are all author actions.</p>
+
+      <div class="gates" style="margin:2rem 0 2.4rem">
+        <article class="gate">
+          <span class="gate-num" aria-hidden="true">I</span>
+          <h3>Outline before prose</h3>
+          <p>No write reaches <code>manuscript/chapters/</code> without an approved outline for that chapter and a clean state check. A subagent cannot approve its own outline.</p>
+          <p class="artifact"><b>Blocks</b>Unapproved prose · half-committed prior chapters · pending capture</p>
+        </article>
+        <article class="gate">
+          <span class="gate-num" aria-hidden="true">II</span>
+          <h3>Blind read on pivotal chapters</h3>
+          <p>A chapter flagged <code>pivotal: true</code> needs a verdict from a reader with no access to the plan. Acceptance waits on the artifact, not on the muse's summary.</p>
+          <p class="artifact"><b>Blocks</b>Accepting a pivotal chapter without a real blind verdict</p>
+        </article>
+        <article class="gate">
+          <span class="gate-num" aria-hidden="true">III</span>
+          <h3>Beta PASS before export</h3>
+          <p>The four-reader readiness protocol must return PASS before the export build runs. Thresholds are numeric and enforced by the engine.</p>
+          <p class="artifact"><b>Blocks</b>Export until every axis ≥ 7, mean ≥ 7.5, no early put-down</p>
+        </article>
+      </div>
+
+      <p>The gates explain themselves. When one blocks, you get the exact artifact it wanted and the command that satisfies it: approve the outline, run the blind reader, finish the pending capture. They never leave you guessing, and they never lock your manuscript — it is your git repository.</p>
+    </section>
+
+    <section id="gate-table">
+      <h2>The gate table</h2>
+      <div class="table-scroll">
+        <table>
+          <caption>Predicates fail open on genuine uncertainty; gate-input protection is the one deliberate exception and fails closed when it cannot verify session context.</caption>
+          <thead>
+            <tr><th scope="col">#</th><th scope="col">Gate</th><th scope="col">Enforced by</th><th scope="col">Blocks</th><th scope="col">Satisfied by</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td><strong>Approved outline before prose</strong></td>
+              <td>PreToolUse hooks on Write/Edit and on Bash (redirection, heredoc, <code>sed -i</code>, copy-laundering all checked)</td>
+              <td>Any write into <code>manuscript/chapters/</code></td>
+              <td><code>work/outline/chapter-NN.md</code> with <code>approved: true</code>, plus a clean <code>state check</code>. Subagents cannot self-approve outlines or forge critique artifacts.</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td><strong>Blind-reader verdict on pivotal chapters</strong></td>
+              <td><code>state check</code> at acceptance, cross-checked by <code>vellum readiness</code></td>
+              <td>Marking a <code>pivotal: true</code> chapter accepted</td>
+              <td><code>work/critique-reports/blind-chapter-NN.md</code> from a real <code>@blind-reader</code> run — verdict ≠ <code>LOST</code>, with the reader's self-recorded run stamp as provenance.</td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td><strong>Beta-reader PASS before export</strong></td>
+              <td><code>vellum readiness</code>, required by <code>/vellum:export</code></td>
+              <td>Export</td>
+              <td><code>work/critique-reports/readiness-report.md</code> with <code>verdict: PASS</code> — every axis ≥ 7, mean ≥ 7.5, no put-down point in chapters 1–3.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <span class="label">The honest exception</span>
+        <p>A single conversation cannot honestly run a blind read. In single-agent mode the muse says so plainly and the author chooses: drop the <code>pivotal</code> flag, or explicitly enable the warned fallback (<code>blind_gate_fallback: true</code> in <code>kb/project-config.json</code> — the author's decision, never the muse's). The engine rejects a fallback-qualified run stamp unless the flag is set. The gate is never skipped silently.</p>
+      </div>
+    </section>
+
+    <section id="loop">
+      <h2>The chapter loop</h2>
+      <p>One command, <code>/vellum:write-chapter</code>, runs the whole editorial cycle. The author appears at two decision points: outline approval and chapter acceptance. Everything else is routed work.</p>
+      <ol class="steps">
+        <li><div><strong>Outline</strong><p>The outliner sequences the chapter into beats with per-beat word quotas summing to the outline target, POV, cast, verbatim anchor lines, and what must not be resolved.</p></div></li>
+        <li><div><strong>Approval</strong><p>You see the outline. Setting <code>approved: true</code> is what disarms gate 1. Only your approval sets <code>pivotal: true</code>.</p></div></li>
+        <li><div><strong>Preconditions</strong><p><code>state check</code> runs. Anything it reports is fixed or surfaced before a word is drafted.</p></div></li>
+        <li><div><strong>Draft</strong><p>The writer receives a fixed context pack: state card, scene brief, previous-chapter tail, cast cards, voice profile plus one exemplar, relevant vocabulary, craft pointers, word budget. Never raw critique; never the whole knowledge base.</p></div></li>
+        <li><div><strong>Post-write net</strong><p>The hook scans silently. It speaks only on tells; debt is recorded, not re-litigated.</p></div></li>
+        <li><div><strong>Critique</strong><p>One or two routine critic lanes, or three to five plus the blind reader when the chapter is pivotal. The muse synthesizes; raw reports are never forwarded.</p></div></li>
+        <li><div><strong>Present</strong><p>The muse tells you what changed, what works, what concerns it, and what decision is needed. Your approval is the acceptance.</p></div></li>
+        <li><div><strong>Capture and close</strong><p>Acceptance fires the mechanical close-out — word count, ledger check, state rebuild — then the knowledge lead captures what happened into the ledgers. The chapter stays pending until capture completes.</p></div></li>
+        <li><div><strong>Before final</strong><p>One demolition pass is offered. Declining is recorded in one line. Demolition is a tool, not a tax.</p></div></li>
+      </ol>
+      <p class="muted">Interrupt anywhere; the state card carries resume.</p>
+    </section>
+
+    <section id="architecture">
+      <h2>Architecture: four layers</h2>
+      <p>Vellum separates four kinds of decision that most writing setups blend together: what is mechanically true, what is enforced, what is judged, and what is methodology.</p>
+
+      <div class="grid-2" style="margin-top:2rem">
+        <article class="card">
+          <h3>1 · The deterministic engine</h3>
+          <p><code>scripts/vellum</code> + <code>scripts/vellum_lib/</code>. Python ≥ 3.8, stdlib only: no pip, no Node, no build step. State rebuild and check; ledger continuity (dead characters, promise ordering, knowledge boundaries, prop custody, clock monotonicity); word bands; bible validation; measured style statistics; context packing; exemptions; and the export build (markdown bundle plus a stdlib EPUB). <code>project-setup</code> copies it into your novel repo.</p>
+        </article>
+        <article class="card">
+          <h3>2 · The hooks</h3>
+          <p>Seven scripts across six lifecycle events. The outline gate fires on both write paths and blocks unapproved prose. The post-write prose net scans drafts and stays silent when clean. Session start prints the state card; compact takes a snapshot; stop reminds you of pending capture; the writer's completion triggers the mechanical close-out. <a href="https://github.com/FiredMosquito831/my-writing-companion/blob/main/hooks/README.md">Hook contract →</a></p>
+        </article>
+        <article class="card">
+          <h3>3 · The agents</h3>
+          <p>16 specialists. The muse coordinates and never judges its own work. Critics and readers are read-only by frontmatter. The writer writes only under <code>manuscript/</code> and <code>work/drafts/</code>. Critique, drafting, and memory updates never share a context. <a href="/reference.html#agents">See every agent →</a></p>
+        </article>
+        <article class="card">
+          <h3>4 · The skills</h3>
+          <p>34 skills carrying the methodology: craft references, ledger schemas, the shared gate rubric, the cold-read protocol, demolition, voice work, project setup, the series operator's manual. Resources load on demand rather than filling the context up front. <a href="/reference.html#skills">See every skill →</a></p>
+        </article>
+      </div>
+    </section>
+
+    <section id="state">
+      <h2>State, and who owns it</h2>
+      <p>The manuscript is ground truth. The knowledge base is durable canon. <code>state/</code> is derived and engine-owned. <code>work/</code> is scratch. When state and prose disagree, Vellum surfaces the conflict; it never silently rewrites prose to match stale tracking.</p>
+      <pre><code>manuscript/chapters/chapter-NN.md   <span class="c"># the prose — ground truth</span>
+kb/                                 <span class="c"># the story bible — yours to edit</span>
+state/                              <span class="c"># machine-authoritative — never hand-edit</span>
+work/                               <span class="c"># outline, drafts, critique reports, cold reads</span>
+export/                             <span class="c"># build artifacts only</span></code></pre>
+      <h3>The state card</h3>
+      <p>A fixed seven-section resume card, hard-capped at 12 KB, rebuilt mechanically: story position, open promises and questions, active cast, knowledge boundaries, props and clock, next beats with quotas, and flags. Session start prints it. The writer's context pack inlines it.</p>
+      <h3>Provenance</h3>
+      <p>Gate artifacts are muse-transcribed, so each carries a provenance record that a real reader produced the verdict it holds. The default is the reader's self-recorded <code>run_stamp:</code> in its returned report frontmatter, transcribed verbatim like the verdict itself. Inventing it is the same fabrication as inventing the verdict.</p>
+      <h3>Exemptions</h3>
+      <p><code>vellum dismiss &lt;key&gt; --reason "your words"</code> records an exemption in your own words and no agent re-raises it. If the underlying fact changes, the exemption goes stale and re-arms exactly once.</p>
+    </section>
+
+    <section id="advisory">
+      <h2>What stays advisory</h2>
+      <p>Everything not in the three gates above, by default: the post-write prose net (AI-tell tiers, hard signals, voice-debt ledger), cold-read BLOCKER-class issues (they block export only until resolved or dismissed with your sign-off), the disruptor lane, and the persona panel. Two further gates — <code>voice_debt_gate</code> and <code>stop_gate</code> — ship off and are opt-in through <code>kb/project-config.json</code>.</p>
+      <p>The design rule is blunt: if a check can be done by code, it is done by code; if it needs judgment, it is advisory unless it guards a moment where being wrong is expensive. <a href="https://github.com/FiredMosquito831/my-writing-companion/blob/main/DESIGN.md">DESIGN.md</a> carries the full build spec, including what was deliberately not built.</p>
+    </section>
+
+    <section id="windows">
+      <h2>Windows is a first-class platform</h2>
+      <ul>
+        <li><strong>Hooks run under Git Bash</strong>, bundled with Git for Windows. No WSL.</li>
+        <li><strong>Interpreter resolution</strong> tries <code>python3</code>, then <code>python</code>, then the <code>py -3</code> launcher, each probed for ≥ 3.8. Gate 1's core predicate is pure bash, so it works with no Python at all.</li>
+        <li><strong>Paths are tested on <code>windows-latest</code> CI</strong>: drive letters, spaces, CRLF files, and UTF-8 BOMs are normalized. Repo files are pinned to LF; <code>LC_ALL=C</code> wherever byte-stable matching matters.</li>
+        <li><strong>Large payloads</strong> are piped to the interpreter via stdin, never passed as arguments, with a regression test above 128 KiB.</li>
+      </ul>
+      <p>CI runs the suite on both <code>ubuntu-latest</code> and <code>windows-latest</code>.</p>
+    </section>
+
+  </div>
+</article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <span class="brand-word">Vellum</span>
+          <p>One command for the chapter loop. Three hard gates. Everything else advisory — and silent when clean.</p>
+          <p><a href="https://github.com/FiredMosquito831/my-writing-companion">github.com/FiredMosquito831/my-writing-companion</a></p>
+        </div>
+        <div class="footer-col">
+          <h4>The site</h4>
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/how-it-works.html">How it works</a></li>
+            <li><a href="/install.html">Install</a></li>
+            <li><a href="/reference.html">Reference</a></li>
+            <li><a href="/series.html">Series layer</a></li>
+            <li><a href="/credits.html">Credits</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Install</h4>
+          <ul>
+            <li><a href="/install.html">Install &amp; quickstart</a></li>
+            <li><a href="/reference.html">Command reference</a></li>
+            <li><a href="https://github.com/FiredMosquito831/my-writing-companion#readme">README</a></li>
+            <li><a href="https://github.com/FiredMosquito831/my-writing-companion/blob/main/TUTORIAL.md">Tutorial</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Documents</h4>
+          <ul>
+            <li><a href="https://github.com/FiredMosquito831/my-writing-companion/blob/main/DESIGN.md">Design spec</a></li>
+            <li><a href="https://github.com/FiredMosquito831/my-writing-companion/blob/main/VALIDATION.md">Validation record</a></li>
+            <li><a href="https://github.com/FiredMosquito831/my-writing-companion/blob/main/ATTRIBUTION.md">Attribution</a></li>
+            <li><a href="https://github.com/FiredMosquito831/my-writing-companion/blob/main/LICENSE">License</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span><span class="fleuron">❦</span> Vellum v0.2.0. Apache-2.0, inherited from the base fork.</span>
+        <span>Written for <a href="https://claude.com/claude-code">Claude Code</a>. Engine: Python ≥ 3.8, stdlib only.</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

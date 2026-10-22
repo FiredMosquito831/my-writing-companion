@@ -3,3 +3,11 @@
 *.sh text eol=lf
 *.py text eol=lf
 *.md text eol=lf
+
+# Generated site output and templates are line-ending stable so the
+# stale-output check in CI compares bytes, not checkout style.
+docs/** text eol=lf
+site/** text eol=lf
+*.woff2 binary
+*.png binary
+*.webp binary

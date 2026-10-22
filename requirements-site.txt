@@ -1,0 +1,11 @@
+# Site-only dependencies. These are NEVER imported by the plugin runtime,
+# its hooks, or its engine: the engine stays Python 3.8 stdlib-only.
+#
+#   python -m pip install -r requirements-site.txt
+#   python scripts/build_site.py
+#
+Jinja2>=3.1,<4
+
+# Optional: regenerating screenshots and the Open Graph image.
+# Playwright is not needed to build or verify the site.
+# playwright>=1.40
