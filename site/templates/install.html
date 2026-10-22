@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block bodyclass %}page-install{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <div class="wrap">
+    <p class="eyebrow">Install &amp; quickstart</p>
+    <h1>Set up the desk. Write the first chapter.</h1>
+    <p class="lede">Vellum installs as a Claude Code plugin. No Node runtime, no pip install, no WSL, no build step. The engine is Python ≥ 3.8, standard library only.</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="toc" aria-label="On this page">
+    <a href="#requirements">Requirements</a>
+    <a href="#install">Install</a>
+    <a href="#first-session">First session</a>
+    <a href="#commands">The eight commands</a>
+    <a href="#engine">The engine</a>
+    <a href="#windows">Windows</a>
+    <a href="#blocked">When a gate blocks</a>
+  </nav>
+</div>
+
+<article class="article">
+  <div class="wrap">
+
+    <section id="requirements">
+      <h2>Requirements</h2>
+      <ul class="plainlist">
+        <li><span class="term">Claude Code</span><span>The host application. The plugin is installed through its marketplace.</span></li>
+        <li><span class="term">Git</span><span>Hooks run under the bash bundled with Git for Windows, so Git is required on Windows as well as for cloning.</span></li>
+        <li><span class="term">Python ≥ 3.8</span><span>On PATH as <code>python3</code>, <code>python</code>, or the Windows <code>py -3</code> launcher. Standard library only; nothing to pip install.</span></li>
+        <li><span class="term">Pandoc (optional)</span><span>DOCX and PDF export only. The markdown bundle and EPUB build without it.</span></li>
+      </ul>
+    </section>
+
+    <section id="install">
+      <h2>Install from GitHub</h2>
+      <p>Inside Claude Code:</p>
+      <pre><code>/plugin marketplace add FiredMosquito831/my-writing-companion
+/plugin install vellum@my-writing-companion</code></pre>
+      <p>Prefer the terminal? The same two steps:</p>
+      <pre><code>claude plugin marketplace add FiredMosquito831/my-writing-companion
+claude plugin install vellum@my-writing-companion</code></pre>
+      <p>Verify with <code>/plugin</code> — vellum should be listed and enabled. After the next session start, the <code>/vellum:</code> commands are live.</p>
+
+      <h3>From a local clone</h3>
+      <pre><code>git clone https://github.com/FiredMosquito831/my-writing-companion.git
+claude plugin marketplace add ./my-writing-companion
+claude plugin install vellum@my-writing-companion</code></pre>
+      <p class="muted">Use the absolute path to the clone instead of <code>./my-writing-companion</code> if Claude Code is launched from another directory.</p>
+    </section>
+
+    <section id="first-session">
+      <h2>Your first session</h2>
+      <p>Work in your novel folder — a new empty directory or an existing manuscript. Both are supported.</p>
+      <ol class="steps">
+        <li><div><strong>Set up the project</strong><p>Run <code>/vellum:init</code>, or tell Claude “Set up my novel project.” The <code>project-setup</code> skill interviews you — genre, POV, progress, and three to five samples of your own prose — seeds <code>manuscript/</code>, <code>kb/</code>, <code>state/</code>, <code>work/</code>, and <code>export/</code>, copies the engine in, builds <code>kb/styles/voice.md</code> plus a measured baseline from your samples, and runs the initial <code>state rebuild</code>.</p></div></li>
+        <li><div><strong>Read the dashboard</strong><p><code>/vellum:status</code> prints the state card, gate statuses, and the resume pointer. From now on every session begins with the card on screen.</p></div></li>
+        <li><div><strong>Write a chapter</strong><p><code>/vellum:write-chapter next</code> — or a specific chapter number. The outliner proposes beats with word quotas and verbatim anchor lines; you approve the outline, and that approval is what disarms gate 1. Say “pivotal” when the chapter is load-bearing. Only you set that flag.</p></div></li>
+        <li><div><strong>Draft, critique, accept</strong><p>The writer receives a fixed context pack. The post-write net runs silently. Critics report; the muse synthesizes; you accept. Pivotal chapters also need the blind reader's verdict before acceptance.</p></div></li>
+        <li><div><strong>Capture and close</strong><p>Acceptance fires word counts, ledger checks, and a state rebuild; the knowledge lead extracts what happened into the ledgers. Before a chapter goes <code>final</code>, one demolition pass is offered. You may decline.</p></div></li>
+        <li><div><strong>Later</strong><p><code>/vellum:cold-read</code> for a cover-to-cover fresh-eyes pass with a rolling reader ledger. <code>/vellum:retune</code> to recalibrate voice from a raw sample. <code>/vellum:export</code> for the readiness gate and the build.</p></div></li>
+      </ol>
+
+      <div class="callout">
+        <span class="label">What setup actually gives you</span>
+        <p>A project that already contains the full engine, the templates, a measured voice baseline, and a state card derived from whatever prose is on disk. There is no separate “generate the project” step and no hand-written configuration required.</p>
+      </div>
+    </section>
+
+    <section id="commands">
+      <h2>The eight commands</h2>
+      <div class="table-scroll">
+        <table class="cmd-table">
+          <thead><tr><th scope="col">Command</th><th scope="col">What it does</th></tr></thead>
+          <tbody>
+            {% for c in data.commands %}
+            <tr>
+              <td>/vellum:{{ c.name }}</td>
+              <td><strong>{{ c.label }}.</strong> {{ c.description }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <p><a class="textlink" href="/reference.html">The full generated reference →</a></p>
+    </section>
+
+    <section id="engine">
+      <h2>The engine, when you want it directly</h2>
+      <p>The engine runs from your project root. Everything the slash commands do mechanically is available here — useful for scripts, for checking what a gate believes, and for repairing state without spending model tokens.</p>
+      <pre><code>python scripts/vellum --version          <span class="c"># engine version</span>
+python scripts/vellum state check        <span class="c"># gate preconditions</span>
+python scripts/vellum state rebuild      <span class="c"># rebuild the derived state card</span>
+python scripts/vellum readiness          <span class="c"># export-readiness evaluation</span>
+python scripts/vellum pack chapter-12    <span class="c"># deterministic writer context pack</span></code></pre>
+      <p>Exit codes are stable: <code>0</code> clean, <code>1</code> findings, <code>2</code> schema or usage error. Subcommands cover state, ledger continuity, bible validation, word counts, knowledge queries, style statistics, context packing, dismissals, voice debt, revision plans, readiness, and export.</p>
+      <p class="muted">The series layer also exposes <code>python scripts/library.py</code> with its own subcommand surface — see <a href="/series.html">the series layer</a>.</p>
+    </section>
+
+    <section id="windows">
+      <h2>Windows notes</h2>
+      <ul>
+        <li>Hooks run under Git Bash; no WSL is needed.</li>
+        <li>Interpreter resolution tries <code>python3</code>, then <code>python</code>, then <code>py -3</code>, each probed for version ≥ 3.8.</li>
+        <li>Gate 1's core predicate is pure bash, so the outline gate still works if Python is missing. Engine preconditions then fail open with a one-line advisory.</li>
+        <li>Paths with drive letters, spaces, CRLF line endings, and UTF-8 BOMs are covered by the Windows CI matrix.</li>
+        <li>Run the test suite from any bash: <code>python -m pytest tests/ -q</code>.</li>
+      </ul>
+    </section>
+
+    <section id="blocked">
+      <h2>When a gate blocks you</h2>
+      <p>A gate reports the artifact it wanted and the action that produces it. It does not lock the manuscript. The three common cases:</p>
+      <ul class="plainlist">
+        <li><span class="term">Outline</span><span>Approve the outline for that chapter. The frontmatter must read <code>approved: true</code>; the muse cannot set it for you.</span></li>
+        <li><span class="term">Blind read</span><span>A pivotal chapter needs a real <code>@blind-reader</code> run written to <code>work/critique-reports/blind-chapter-NN.md</code> with a verdict other than <code>LOST</code>.</span></li>
+        <li><span class="term">Readiness</span><span>Export needs <code>work/critique-reports/readiness-report.md</code> with <code>verdict: PASS</code>. A failing report is also a prioritized fix list.</span></li>
+      </ul>
+      <p>If state and prose disagree, Vellum surfaces the conflict rather than rewriting either. The full rescue manual lives in <a href="{{ site.repo }}/blob/main/TUTORIAL.md">TUTORIAL.md §17</a>.</p>
+    </section>
+
+  </div>
+</article>
+{% endblock %}

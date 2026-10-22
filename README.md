@@ -1,6 +1,6 @@
 <div align="center">
 
-# 📖 Vellum
+# Vellum
 
 **A working novelist's daily tool for Claude Code.**
 
@@ -12,16 +12,27 @@ Everything else advisory — and silent when clean.
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org)
 [![Claude Code plugin](https://img.shields.io/badge/Claude_Code-plugin-8A5CF6.svg)](https://claude.com/claude-code)
+[![Website](https://img.shields.io/badge/website-vellum.danubelabs.net-6c1d24.svg)](https://vellum.danubelabs.net)
 
-[Install](#-install) · [Quickstart](#-quickstart-your-first-session) · [Gate model](#-the-gate-model) · [Library & series (v0.2.0)](#-library--series-layer-v020) · [Architecture](#️-architecture) · [FAQ](#-faq)
+[Website](https://vellum.danubelabs.net) · [Install](#install) · [Quickstart](#quickstart-your-first-session) · [Gate model](#the-gate-model) · [Series layer](#library--series-layer-v020) · [Architecture](#architecture) · [FAQ](#faq)
 
 </div>
 
 ---
 
-Vellum is authored by [FiredMosquito831](https://github.com/FiredMosquito831) — a fork of [`haowjy/creative-writing-skills`](https://github.com/haowjy/creative-writing-skills) (Apache-2.0), rebuilt into a complete novel-writing harness that combines the best verified mechanisms of twenty systems in this space (see [Credits](#-credits--how-vellum-improves-on-them)). Every ported mechanism is credited in [ATTRIBUTION.md](ATTRIBUTION.md), the build spec lives in [DESIGN.md](DESIGN.md), and the full validation record — including what we know is still rough — is in [VALIDATION.md](VALIDATION.md).
+**Vellum is a Claude Code plugin for people writing books.** It replaces wishes with machinery: hooks that block unapproved prose, a Python engine that checks what code can check, sixteen agents whose permissions make context contamination impossible, and a one-screen state card that survives sessions and months away from the manuscript.
 
-## 🤔 Why Vellum?
+You talk to the muse. The muse routes isolated specialists. The specialists use the engine and the skills. The gates read their evidence from disk — never from a claim in chat.
+
+<p align="center">
+  <a href="https://vellum.danubelabs.net"><img src="site/static/screenshots/home.webp" alt="The Vellum site: a parchment-coloured editorial page with the headline 'The novel is long. The machinery should hold.', a specimen state card, and counts of 8 commands, 16 agents, 34 skills, 7 hooks." width="100%"></a>
+  <br/>
+  <em>The site is generated from this repository — version, counts, and the reference all come from the files.</em>
+</p>
+
+Vellum is authored by [FiredMosquito831](https://github.com/FiredMosquito831) — a fork of [`haowjy/creative-writing-skills`](https://github.com/haowjy/creative-writing-skills) (Apache-2.0), rebuilt into a complete novel-writing harness that combines the best verified mechanisms of twenty systems in this space (see [Credits](#credits--how-vellum-improves-on-them)). Every ported mechanism is credited in [ATTRIBUTION.md](ATTRIBUTION.md), the build spec lives in [DESIGN.md](DESIGN.md), and the full validation record — including what we know is still rough — is in [VALIDATION.md](VALIDATION.md).
+
+## Why Vellum?
 
 Long-form fiction is where LLM workflows fall apart. Drafts drift toward the statistical average. Critique leaks into drafting and everything starts flattering itself. Continuity dies at context compaction, somewhere around chapter nine. And "please be consistent" is a wish, not a mechanism.
 
@@ -33,7 +44,23 @@ Vellum replaces wishes with machinery:
 - **State survives the session.** A fixed one-screen state card, rebuilt mechanically, printed at every session start. Put the manuscript down for a month; pick the thread back up in one read.
 - **You are the editor-in-chief.** Call a finding intentional and it's recorded as an exemption *in your own words*, never re-raised. If the underlying fact changes, the question re-arms exactly once.
 
-## ✨ Highlights
+### The three hard gates
+
+| # | Gate | Blocks | Satisfied by |
+|---|---|---|---|
+| 1 | **Approved outline before prose** | Any write into `manuscript/chapters/` | `work/outline/chapter-NN.md` with `approved: true`, plus a clean `state check` |
+| 2 | **Blind-reader verdict on pivotal chapters** | Accepting a `pivotal: true` chapter | `work/critique-reports/blind-chapter-NN.md`, verdict ≠ `LOST`, with the reader's self-recorded run stamp |
+| 3 | **Beta-reader PASS before export** | Export | `work/critique-reports/readiness-report.md` with `verdict: PASS` — every axis ≥ 7, mean ≥ 7.5 |
+
+Everything else is advisory and silent when clean. [The gate model in depth →](https://vellum.danubelabs.net/how-it-works.html)
+
+<p align="center">
+  <a href="https://vellum.danubelabs.net/how-it-works.html"><img src="site/static/screenshots/gate-table.webp" alt="The Vellum gate table: each gate, what enforces it, what it blocks, and the artifact that satisfies it." width="100%"></a>
+  <br/>
+  <em>Each gate has one artifact, one predicate, and one owner. <a href="https://vellum.danubelabs.net/how-it-works.html">How it works →</a></em>
+</p>
+
+## Highlights
 
 | | | |
 |---|---|---|
@@ -45,7 +72,7 @@ Vellum replaces wishes with machinery:
 | 📚 | **Series-aware (v0.2.0)** | An optional library/series layer for multi-book canon: a series bible with per-book value maps, a retcon lifecycle that records your words verbatim, published books frozen by default. Findings stay advisory — the gates stayed three. |
 | 🪟 | **Windows-first, dependency-light** | No Node, no pip, no WSL, no build step. Python ≥ 3.8 stdlib only. Tested on `ubuntu-latest` *and* `windows-latest` CI. |
 
-## 📦 Install
+## Install
 
 Requirements: Claude Code, Git (hooks run under its bundled bash), and a Python ≥ 3.8 interpreter on PATH (`python3`, `python`, or the Windows `py -3` launcher). Node is not required. Pandoc is optional (DOCX/PDF export only; the markdown bundle and EPUB build without it).
 
@@ -65,9 +92,9 @@ claude plugin marketplace add C:/path/to/my-writing-companion
 claude plugin install vellum@my-writing-companion
 ```
 
-Verify with `/plugin` (vellum should be enabled). After your next session start, the `/vellum:` commands are live.
+Verify with `/plugin` (vellum should be enabled). After your next session start, the `/vellum:` commands are live. [Full install notes →](https://vellum.danubelabs.net/install.html)
 
-## 🚀 Quickstart: your first session
+## Quickstart: your first session
 
 1. **Set up the project.** In your novel folder (empty or an existing manuscript), run `/vellum:init` or tell Claude: *"Set up my novel project."* The `project-setup` skill interviews you (genre, POV, progress, writing samples), seeds the layout (`manuscript/`, `kb/`, `state/`, `work/`, `export/`), copies the engine and templates in, closes with a voice-capture interview (3–5 samples of your own prose become `kb/styles/voice.md` and the measured baseline), and finishes by running the initial `state rebuild` for you.
 2. **Check the dashboard.** `/vellum:status` prints the state card, gate statuses, and the resume pointer. From now on, every session starts with the card on screen.
@@ -76,7 +103,21 @@ Verify with `/plugin` (vellum should be enabled). After your next session start,
 5. **Capture and close.** Acceptance triggers the mechanical close-out — word counts, ledger check, state rebuild — and routes `@kb-lead` to extract what happened into the ledgers. Before a chapter goes `final`, the muse offers one demolition pass. You may decline; demolition is a tool, not a tax.
 6. **Later.** `/vellum:cold-read` for batch fresh-eyes reads with a rolling reader ledger, `/vellum:retune` to recalibrate voice from a raw sample, `/vellum:export` for the readiness check and the EPUB build.
 
-## 🚦 The gate model
+## Screenshots
+
+<p align="center">
+  <a href="https://vellum.danubelabs.net/reference.html"><img src="site/static/screenshots/reference.webp" alt="The generated reference page listing Vellum's 16 agents with their Opus and Sonnet tier badges and the skills each loads." width="100%"></a>
+  <br/>
+  <em>The reference is generated from the plugin's own frontmatter — names, descriptions, model tiers, skill loads. <a href="https://vellum.danubelabs.net/reference.html">Browse it →</a></em>
+</p>
+
+<p align="center">
+  <img src="site/static/screenshots/home-mobile.webp" alt="The Vellum home page at phone width: stacked navigation, the same headline and install button." width="320">
+  <br/>
+  <em>The same pages at 390 px.</em>
+</p>
+
+## The gate model
 
 Exactly three hard gates; everything else is advisory. Each gate reads its artifact **from disk** — never a claim from chat. Predicates fail open on genuine uncertainty (a missing Python runtime can never mis-block you). The one deliberate exception: gate-input protection fails closed when it cannot verify session context.
 
@@ -90,7 +131,7 @@ Never-blocking advisory layers: the post-write prose net (AI-tell tiers, hard si
 
 Your dismissals are first-class: `vellum dismiss <key> --reason "<your words>"` (or `/vellum:dismiss`) records the exemption, and no agent re-raises it. If the underlying fact changes, the exemption goes stale and re-arms exactly once.
 
-## 🏗️ Architecture
+## Architecture
 
 Four layers, deliberately separated:
 
@@ -102,18 +143,20 @@ Four layers, deliberately separated:
 ### What it installs
 
 - **`agents/`** — 16 agents: muse, outliner, writer, critic, editor, blind-reader, beta-reader, cold-reader, kb-lead, disruptor, style-creator, continuity-checker, character-sim, reader-sim, brainstormer, web-researcher.
-- **`skills/`** — 34 skills, including `story-ledgers`, `gates`, `style-guardrails`, `voice`, `cold-read`, `demolition`, `export`, `kb-integrity`, `project-setup`, and the two new v0.2.0 skills: the `series` operator's manual and the `series-bible` data-dialect reference for the library layer.
-- **`commands/`** — `/vellum:init`, `/vellum:write-chapter`, `/vellum:status`, `/vellum:cold-read`, `/vellum:retune`, `/vellum:export`, `/vellum:dismiss`, and `/vellum:series` for the library layer.
+- **`skills/`** — 34 skills, including `story-ledgers`, `gates`, `style-guardrails`, `voice`, `cold-read`, `demolition`, `export`, `kb-integrity`, `project-setup`, and the two v0.2.0 skills: the `series` operator's manual and the `series-bible` data-dialect reference.
+- **`commands/`** — `/vellum:init`, `/vellum:write-chapter`, `/vellum:status`, `/vellum:cold-read`, `/vellum:retune`, `/vellum:export`, `/vellum:dismiss`, and `/vellum:series`.
 - **`hooks/`** — 7 hook scripts across 6 lifecycle events (details in [`hooks/README.md`](hooks/README.md)).
-- **`templates/`** — the schemas your project is seeded with: chapter frontmatter, ledgers, state card, scene cards, cold-read kit, project config, measured baseline, and the retcon plan template for series work.
+- **`templates/`** — the schemas your project is seeded with: chapter frontmatter, ledgers, state card, scene cards, cold-read kit, project config, measured baseline, and the retcon plan template.
 
-## 📚 Library & series layer (v0.2.0)
+The full generated reference — every command, agent, skill, model tier, and hook — is at **[vellum.danubelabs.net/reference.html](https://vellum.danubelabs.net/reference.html)** and in [`TUTORIAL.md`](TUTORIAL.md).
+
+## Library & series layer (v0.2.0)
 
 **What it is.** An optional layer for authors writing a series, so canon is carried forward explicitly instead of re-invented book by book. The library lives **outside** every book project — `project-setup` never creates one, and `library init` refuses to run inside a book — so a v0.1.1 single-book project keeps working byte-identically whether the layer is installed or not, and whether any book is linked.
 
 **What it stores.** The series root holds `library.json` (manifest), `series/bible.json` (the single source of truth for canon, with per-field `by-book` value maps — no log-walking, no `canon:` mirror in any book file), `series/retcons.jsonl` (append-only audit log that records your words verbatim), `series/exemptions.json` (series-scope dismissals, never written into a book), and human-owned `series/errata.md`. A linked book gets only an inert pointer sidecar, `.vellum/series-link.json`, plus an optional opt-in `series-id:` line on entity frontmatter.
 
-**How you work it.** Run `/vellum:series` and the muse routes you through the `series` skill. The engine subcommands (all `--root <library-root>`, no walk-up discovery) are:
+**How you work it.** Run `/vellum:series` and the muse routes you through the `series` skill. The engine subcommands (all take `--root <library-root>`, no walk-up discovery) are:
 
 | Subcommand | Purpose |
 |---|---|
@@ -129,10 +172,10 @@ Four layers, deliberately separated:
 | `library handoff <book-root>` | Generate the next book's handoff: frozen canon, iron facts, do-not-re-explain register, open retcons, errata posture. |
 | `library dismiss <finding-id> --reason "…"` | Record a series-scope dismissal in your own words. |
 
-**Doctrine.** The three hard gates stay three — series findings are advisory and the layer adds no fourth gate. Book status is `draft | published | archived`: published canon is frozen (the default merge is *retcon record required* — the draft loses, never later-wins), and `archived` books are fully quiet. A linked book's `kb/story.md`, `CLAUDE.md`, and hooks are never edited by the layer, and no book-side schema bump is required.
+**Doctrine.** The three hard gates stay three — series findings are advisory and the layer adds no fourth gate. Book status is `draft | published | archived`: published canon is frozen (the default merge is *retcon record required* — the draft loses, never later-wins), and `archived` books are fully quiet. A linked book's `kb/story.md`, `CLAUDE.md`, and hooks are never edited by the layer, and no book-side schema bump is required. [The series layer in full →](https://vellum.danubelabs.net/series.html)
 
 <details>
-<summary><strong>🗂️ State files explained</strong> (what's yours, what's the engine's)</summary>
+<summary><strong>State files explained</strong> (what's yours, what's the engine's)</summary>
 
 `project-setup` seeds your novel repo with:
 
@@ -160,7 +203,7 @@ Division of authority: your prose is ground truth; `kb/` is durable canon; `stat
 </details>
 
 <details>
-<summary><strong>🪟 Windows notes</strong></summary>
+<summary><strong>Windows notes</strong></summary>
 
 - **Hooks run under Git Bash** (bundled with Git for Windows) — no WSL needed.
 - **Interpreter resolution** tries `python3`, then `python`, then the `py -3` launcher, each probed for ≥ 3.8. The outline gate's core predicate is pure bash, so gate 1 works even with no Python at all (engine preconditions then skip with a one-line advisory — fail-open by doctrine).
@@ -170,7 +213,7 @@ Division of authority: your prose is ground truth; `kb/` is durable canon; `stat
 
 </details>
 
-## ❓ FAQ
+## FAQ
 
 **Do I need Python?**
 Strongly recommended. Without it, gate 1 still works (its predicate is pure bash) and the engine-dependent preconditions fail open with an advisory. With it, everything works.
@@ -187,9 +230,9 @@ Yes. `project-setup` works on existing folders, and the state engine builds its 
 **How is this different from just prompting Claude Code?**
 Prompting asks the model to be consistent. Vellum enforces it: hooks that can't be talked past, a Python engine that checks what code can check, agents whose permissions make contamination impossible, and state that survives context compaction.
 
-## 📈 Status: v0.2.0
+## Status: v0.2.0
 
-New in v0.2.0, per [`library-spec.md`](../library-spec.md): the optional **library/series layer** — the `scripts/library.py` entry point backed by three series modules (`scripts/vellum_lib/series_cli.py`, `scripts/vellum_lib/series_bible.py`, `scripts/vellum_lib/series_checks.py`), the `vellum:series` skill with its agent-facing detection-catalog reference, the retcon-plan template, the `/vellum:series` command, and a fail-open series line in the session-start hook for linked books. The release suite has **155 passing tests** (120 engine/hook tests plus 35 series follow-up tests). Compatibility is enforced, not promised: a byte-identity golden suite runs the full v0.1.1 command surface on a linked project and asserts identical output, and an inert-to-old-engine test deletes the new modules and re-runs the surface. See [Library & series layer](#-library--series-layer-v020) above and [DESIGN.md §18](DESIGN.md).
+New in v0.2.0, per the library spec (semantics recorded in [DESIGN.md §18](DESIGN.md)): the optional **library/series layer** — the `scripts/library.py` entry point backed by three series modules (`scripts/vellum_lib/series_cli.py`, `scripts/vellum_lib/series_bible.py`, `scripts/vellum_lib/series_checks.py`), the `vellum:series` skill with its agent-facing detection-catalog reference, the retcon-plan template, the `/vellum:series` command, and a fail-open series line in the session-start hook for linked books. The release suite has **155 passing tests** (120 engine/hook tests plus 35 series follow-up tests). Compatibility is enforced, not promised: a byte-identity golden suite runs the full v0.1.1 command surface on a linked project and asserts identical output, and an inert-to-old-engine test deletes the new modules and re-runs the surface. See [Library & series layer](#library--series-layer-v020) above and [DESIGN.md §18](DESIGN.md).
 
 ### v0.1.1 record
 
@@ -197,9 +240,9 @@ Implemented per [DESIGN.md](DESIGN.md): 16 agents, 32 skills, 7 commands (includ
 
 New in v0.1.1, beyond the fixes to the eight paper-run findings: the craft layer grew — an **obligatory scenes & conventions checklist** per genre (Story Grid, ideas-only) that the outliner and beta reader actually check; a **try-fail failure ladder** resource for arc planning and saggy middles; a **revision plan** artifact (`work/revision-plan.md`, with `vellum revision status`) that triages every finding from every review source into one tracked plan; a **beta-synthesis protocol** for when parallel readers disagree; **per-character dialogue profiles** with a blind speaker-attribution test (`style stats --dialogue`); and a **tense/person morphology scan** for Romanian prose in the advisory post-write net (`style stats --morphology` — report-only, carve-out-able). Everything new is advisory; the three gates stayed three. Details and audit record in [VALIDATION.md §5–6](VALIDATION.md).
 
-The eight paper-run findings from v0.1.0 are resolved — see [VALIDATION.md §4](VALIDATION.md) for the fix record. Notable in v0.1.1: gate-artifact provenance now uses the reader's self-recorded run stamp (with an optional transcript-path binding), single-agent pivotal chapters have a documented author-enabled fallback (`blind_gate_fallback` in `kb/project-config.json`), `project-setup` runs the initial `state rebuild`, and `/vellum:init` gives setup a first-class entry point.
+The eight paper-run findings from v0.1.0 are resolved — see [VALIDATION.md §4](VALIDATION.md) for the fix record.
 
-## 🙏 Credits — and how Vellum improves on them
+## Credits — and how Vellum improves on them
 
 Vellum stands on a lot of shoulders. It was built by deep-reading twenty storywriting systems and combining their best verified mechanisms into one coherent, tested architecture — keeping what worked, fixing what didn't. The full design story lives in [ATTRIBUTION.md](ATTRIBUTION.md); the short version:
 
@@ -220,6 +263,12 @@ Vellum stands on a lot of shoulders. It was built by deep-reading twenty storywr
 
 License-wise: the base fork's Apache-2.0 copyright is retained; MIT sources keep their notices; unlicensed sources contributed ideas only — no text or code was copied. See [LICENSE](LICENSE), [NOTICE](NOTICE), and [ATTRIBUTION.md](ATTRIBUTION.md).
 
-## 📄 License
+## Contributing, security, changelog
+
+- [CONTRIBUTING.md](CONTRIBUTING.md) — the constraints that keep the plugin shippable: Python 3.8 stdlib only, frontmatter lint, the 155-test suite, and the deterministic site build.
+- [SECURITY.md](SECURITY.md) — what the plugin does with your files, what it never does, and how to report a vulnerability.
+- [CHANGELOG.md](CHANGELOG.md) — the version history in one place.
+
+## License
 
 Apache-2.0 (inherited from the base fork; see [LICENSE](LICENSE)). Ported MIT sources keep their notices; unlicensed sources contributed ideas only — no text or code was copied.

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block bodyclass %}page-404{% endblock %}
+
+{% block content %}
+<section class="notfound">
+  <div class="wrap">
+    <span class="big" aria-hidden="true">404</span>
+    <h1>This page is not in the manuscript.</h1>
+    <p>No chapter, outline, or ledger entry lives at that address. The draft continues elsewhere.</p>
+    <p style="margin-top:1.8rem">
+      <a class="btn btn--solid" href="/">Return to the title page</a>
+    </p>
+    <p class="muted" style="margin-top:1.6rem;font-size:0.9rem">Looking for the reference? <a href="/reference.html">Commands, agents, and skills</a>. Installing? <a href="/install.html">Install &amp; quickstart</a>.</p>
+  </div>
+</section>
+{% endblock %}

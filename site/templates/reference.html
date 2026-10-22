@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block bodyclass %}page-reference{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <div class="wrap">
+    <p class="eyebrow">Reference</p>
+    <h1>Everything in the plugin, generated from the plugin.</h1>
+    <p class="lede">These entries are read from the repository's own frontmatter at build time — names, descriptions, model tiers, and skill loads. If the plugin changes, this page changes with it.</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="ref-intro" aria-label="Plugin totals">
+    <div><span class="num">{{ data.counts.commands }}</span><span class="lbl">Slash commands</span></div>
+    <div><span class="num">{{ data.counts.agents }}</span><span class="lbl">Agents</span></div>
+    <div><span class="num">{{ data.counts.skills }}</span><span class="lbl">Skills</span></div>
+    <div><span class="num">{{ data.counts.hooks }}</span><span class="lbl">Hooks</span></div>
+  </div>
+
+  <nav class="toc" aria-label="On this page">
+    <a href="#commands">Commands</a>
+    <a href="#agents">Agents</a>
+    <a href="#skills">Skills</a>
+    <a href="#hooks">Hooks</a>
+  </nav>
+</div>
+
+<article class="article">
+  <div class="wrap">
+
+    <section id="commands">
+      <h2>Slash commands</h2>
+      <p>The author-facing surface. Each command dispatches into the muse, a skill, or the engine; none of them hides a gate.</p>
+      <div class="table-scroll">
+        <table class="cmd-table">
+          <thead><tr><th scope="col">Command</th><th scope="col">Purpose</th></tr></thead>
+          <tbody>
+            {% for c in data.commands %}
+            <tr>
+              <td>/vellum:{{ c.name }}</td>
+              <td><strong>{{ c.label }}.</strong> {{ c.description }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="agents">
+      <h2>Agents</h2>
+      <p>{{ data.counts.agents }} specialists in isolated stances. {{ data.counts.opus }} run on Opus, where judgment or prose quality carries the work; {{ data.counts.sonnet }} run on Sonnet, where retrieval and mechanical synthesis carry it. Critics and readers are read-only by frontmatter; the writer's write scope is the manuscript and drafts.</p>
+
+      <div class="agent-grid" style="margin-top:2rem">
+        {% for a in data.agents %}
+        <article class="agent">
+          <div class="agent-head">
+            <h3>@{{ a.name }}</h3>
+            <span class="tag tag--{{ a.model }}">{{ a.model }}</span>
+          </div>
+          <p>{{ a.description }}</p>
+          {% if a.skills %}
+          <p class="loads"><strong>Loads:</strong> {{ a.skills | join(", ") }}</p>
+          {% endif %}
+        </article>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section id="skills">
+      <h2>Skills</h2>
+      <p>{{ data.counts.skills }} skills carry the methodology. They are loaded on demand, so a specialist gets the craft, schemas, or rubric it needs without carrying the rest.</p>
+      {% for group in data.skill_groups %}
+      <div class="skill-group">
+        <h3>{{ group.title }} <span class="count">{{ group.skills | length }}</span></h3>
+        <p>{{ group.blurb }}</p>
+        {% for s in group.skills %}
+        <div class="skill">
+          <h4>{{ s.name }}</h4>
+          <p>{{ s.description }}</p>
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </section>
+
+    <section id="hooks">
+      <h2>Hooks</h2>
+      <p>Seven scripts across six lifecycle events. Only the two outline-gate paths block by default.</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th scope="col">Event</th><th scope="col">Matcher</th><th scope="col">Script</th><th scope="col">Mode</th></tr></thead>
+          <tbody>
+            {% for h in data.hooks %}
+            <tr>
+              <td>{{ h.event }}</td>
+              <td>{{ h.matcher }}</td>
+              <td><code>{{ h.script }}</code></td>
+              <td>{% if h.blocking == "Blocking" %}<span class="tag tag--block">{{ h.blocking }}</span>{% else %}<span class="tag">{{ h.blocking }}</span>{% endif %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <figure style="margin-top:2.5rem">
+        <a class="shot" href="/assets/screenshots/reference.webp"><img src="/assets/screenshots/reference.webp" alt="Vellum reference page showing the agent grid with model tier badges." width="1440" height="1000" loading="lazy"></a>
+        <figcaption><b>Fig. 3</b> — The reference page, generated from agent, command, and skill frontmatter.</figcaption>
+      </figure>
+    </section>
+
+  </div>
+</article>
+{% endblock %}

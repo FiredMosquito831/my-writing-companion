@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Vellum social card</title>
+<style>
+  @font-face {
+    font-family: "Cormorant Garamond";
+    font-style: normal;
+    font-weight: 400 700;
+    src: url("static/fonts/cormorant-garamond-latin.woff2") format("woff2");
+  }
+  @font-face {
+    font-family: "EB Garamond";
+    font-style: normal;
+    font-weight: 400 700;
+    src: url("static/fonts/eb-garamond-latin.woff2") format("woff2");
+  }
+  @font-face {
+    font-family: "EB Garamond";
+    font-style: italic;
+    font-weight: 400;
+    src: url("static/fonts/eb-garamond-italic-latin.woff2") format("woff2");
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    width: 1200px;
+    height: 630px;
+    overflow: hidden;
+    background: #f3ead8;
+    background-image:
+      radial-gradient(700px 420px at 18% -10%, rgba(255, 253, 246, 0.9), transparent 65%),
+      radial-gradient(600px 500px at 100% 100%, rgba(108, 29, 36, 0.1), transparent 60%);
+    color: #211a16;
+    font-family: "EB Garamond", Georgia, serif;
+    padding: 58px 68px;
+    position: relative;
+  }
+  .frame {
+    position: absolute;
+    inset: 26px;
+    border: 1px solid rgba(108, 29, 36, 0.55);
+  }
+  .frame::after {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border: 1px solid rgba(155, 122, 60, 0.35);
+  }
+  .inner { position: relative; z-index: 2; display: flex; flex-direction: column; height: 100%; }
+  .top { display: flex; align-items: center; justify-content: space-between; }
+  .brand { display: flex; align-items: center; gap: 18px; }
+  .mark {
+    width: 64px; height: 64px; border: 1px solid #6c1d24; border-radius: 50%;
+    display: grid; place-items: center; color: #6c1d24;
+    font-family: "Cormorant Garamond", Georgia, serif; font-size: 38px; font-weight: 600;
+  }
+  .word {
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: 44px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase;
+    line-height: 1;
+  }
+  .word small {
+    display: block; font-family: "EB Garamond", Georgia, serif;
+    font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: #75665a; margin-top: 8px; font-weight: 400;
+  }
+  .version { font-size: 15px; letter-spacing: 0.18em; text-transform: uppercase; color: #75665a; }
+  h1 {
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-weight: 600; font-size: 79px; line-height: 0.98;
+    letter-spacing: -0.015em; margin: 44px 0 0; max-width: 19ch;
+  }
+  h1 em { font-style: italic; color: #6c1d24; }
+  .sub {
+    font-size: 25px; line-height: 1.4; color: #4a3f36; margin: 18px 0 0; max-width: 52ch;
+  }
+  .bottom {
+    margin-top: auto; padding-top: 22px; border-top: 1px solid rgba(205, 187, 156, 0.9);
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 24px;
+  }
+  .gates { display: flex; gap: 30px; }
+  .gate { font-size: 15px; letter-spacing: 0.13em; text-transform: uppercase; color: #6c1d24; }
+  .gate b { display: block; font-family: "Cormorant Garamond", Georgia, serif; font-size: 23px; letter-spacing: 0.02em; text-transform: none; color: #211a16; margin-top: 4px; }
+  .url { font-size: 17px; letter-spacing: 0.1em; color: #75665a; text-align: right; }
+  .url b { display: block; font-family: "Cormorant Garamond", Georgia, serif; font-size: 25px; letter-spacing: 0.04em; color: #211a16; font-weight: 600; margin-top: 3px; }
+</style>
+</head>
+<body>
+  <div class="frame"></div>
+  <div class="inner">
+    <div class="top">
+      <div class="brand">
+        <span class="mark">V</span>
+        <span class="word">Vellum<small>A novelist's daily tool for Claude Code</small></span>
+      </div>
+      <span class="version">A Claude Code plugin · Apache-2.0</span>
+    </div>
+    <h1>The novel is long. The <em>machinery</em> should hold.</h1>
+    <p class="sub">One command for the chapter loop. Three hard gates that read from disk. An engine that checks what code can check — and stays silent when clean.</p>
+    <div class="bottom">
+      <div class="gates">
+        <span class="gate">I<b>Outline before prose</b></span>
+        <span class="gate">II<b>The blind reader</b></span>
+        <span class="gate">III<b>Beta PASS before export</b></span>
+      </div>
+      <span class="url">vellum.danubelabs.net<b>Vellum</b></span>
+    </div>
+  </div>
+</body>
+</html>

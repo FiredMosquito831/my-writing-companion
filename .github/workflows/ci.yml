@@ -34,3 +34,27 @@ jobs:
 
   tests:
     uses: ./.github/workflows/tests.yml
+
+  site:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install site-only dependencies
+        run: python -m pip install --upgrade pip && python -m pip install -r requirements-site.txt
+
+      - name: Build the site and fail if docs/ is stale
+        # Deterministic build: version comes from plugin.json, entries from
+        # frontmatter, no timestamps. --check rebuilds and then requires the
+        # committed docs/ tree to match exactly.
+        run: python scripts/build_site.py --check
+
+      - name: Sweep every generated page and asset for references that 404
+        # The advertised host is not live during CI, so resolve pages and local
+        # assets on disk instead of over the network.
+        run: python scripts/ci/check_site_links.py

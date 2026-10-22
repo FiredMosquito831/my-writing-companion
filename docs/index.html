@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vellum — a working novelist&#39;s daily tool for Claude Code</title>
+  <meta name="description" content="One command for the chapter loop. Three hard gates that read from disk. A stdlib-only Python engine and sixteen stance-isolated agents for long-form fiction in Claude Code.">
+  <meta name="keywords" content="Vellum, Claude Code plugin, novel writing, AI fiction, writing workflow, story bible, continuity, three hard gates">
+  <meta name="author" content="FiredMosquito831">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <link rel="canonical" href="https://vellum.danubelabs.net/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Vellum">
+  <meta property="og:locale" content="en_GB">
+  <meta property="og:title" content="Vellum — a working novelist&#39;s daily tool for Claude Code">
+  <meta property="og:description" content="One command for the chapter loop. Three hard gates that read from disk. A stdlib-only Python engine and sixteen stance-isolated agents for long-form fiction in Claude Code.">
+  <meta property="og:url" content="https://vellum.danubelabs.net/">
+  <meta property="og:image" content="https://vellum.danubelabs.net/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Vellum — a working novelist's daily tool for Claude Code">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Vellum — a working novelist&#39;s daily tool for Claude Code">
+  <meta name="twitter:description" content="One command for the chapter loop. Three hard gates that read from disk. A stdlib-only Python engine and sixteen stance-isolated agents for long-form fiction in Claude Code.">
+  <meta name="twitter:image" content="https://vellum.danubelabs.net/og.png">
+  <meta name="twitter:image:alt" content="Vellum — a working novelist's daily tool for Claude Code">
+
+  <meta name="theme-color" content="#6c1d24">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/assets/fonts/cormorant-garamond-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/eb-garamond-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/css/site.css">
+  <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@id": "https://vellum.danubelabs.net/#website", "@type": "WebSite", "description": "Vellum is a working novelist\u0027s daily tool for Claude Code: one command for the chapter loop, three hard gates, and an advisory layer that stays silent when clean.", "inLanguage": "en", "name": "Vellum", "url": "https://vellum.danubelabs.net/"}, {"@id": "https://vellum.danubelabs.net/", "@type": "WebPage", "about": {"@id": "https://vellum.danubelabs.net/#software"}, "description": "One command for the chapter loop. Three hard gates that read from disk. A stdlib-only Python engine and sixteen stance-isolated agents for long-form fiction in Claude Code.", "isPartOf": {"@id": "https://vellum.danubelabs.net/#website"}, "name": "Vellum \u2014 a working novelist\u0027s daily tool for Claude Code", "url": "https://vellum.danubelabs.net/"}, {"@id": "https://vellum.danubelabs.net/#software", "@type": "SoftwareApplication", "alternateName": "Vellum for Claude Code", "applicationCategory": "MultimediaApplication", "applicationSubCategory": "Novel writing", "author": {"@type": "Person", "name": "FiredMosquito831", "url": "https://github.com/FiredMosquito831"}, "codeRepository": "https://github.com/FiredMosquito831/my-writing-companion", "description": "Vellum is a working novelist\u0027s daily tool for Claude Code: one command for the chapter loop, three hard gates, and an advisory layer that stays silent when clean.", "downloadUrl": "https://github.com/FiredMosquito831/my-writing-companion", "isAccessibleForFree": true, "isBasedOn": "https://github.com/haowjy/creative-writing-skills", "keywords": "Vellum, Claude Code plugin, novel writing, AI fiction, writing workflow, story bible, continuity, three hard gates", "license": "https://www.apache.org/licenses/LICENSE-2.0", "name": "Vellum", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "operatingSystem": "Windows, macOS, Linux", "softwareVersion": "0.2.0", "url": "https://vellum.danubelabs.net/"}]}</script>
+</head>
+<body class="page-home">
+  <a class="skip" href="#main">Skip to the text</a>
+
+  <header class="masthead">
+    <div class="topline">
+      <div class="wrap">
+        <span>A Claude Code plugin for novelists</span>
+        <span class="topline-extra">Version 0.2.0 · Apache-2.0 · Windows &amp; Linux</span>
+      </div>
+    </div>
+    <div class="wrap brand-row">
+      <a class="brand" href="/" aria-label="Vellum home">
+        <span class="brand-mark" aria-hidden="true">V</span>
+        <span>
+          <span class="brand-word">Vellum</span>
+          <span class="brand-sub">A novelist's daily tool</span>
+        </span>
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a href="/" aria-current="page">Home</a>
+        <a href="/how-it-works.html">How it works</a>
+        <a href="/install.html">Install</a>
+        <a href="/reference.html">Reference</a>
+        <a href="/series.html">Series layer</a>
+        <a href="/credits.html">Credits</a>
+        <a class="nav-repo" href="https://github.com/FiredMosquito831/my-writing-companion" rel="noopener">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow">A working novelist's daily tool for Claude Code</p>
+      <h1>The novel is long. The <em>machinery</em> should hold.</h1>
+      <p class="lede">Vellum is a Claude Code plugin for people writing books. One command runs the chapter loop. Three hard gates read their evidence from disk. Everything else is advisory, and silent when clean.</p>
+      <div class="hero-actions">
+        <a class="btn btn--solid" href="/install.html">Install Vellum</a>
+        <a class="textlink" href="/how-it-works.html">See how it works →</a>
+      </div>
+    </div>
+
+    <aside class="hero-specimen" aria-label="A specimen of the state card">
+      <div class="specimen-title">The state card · one screen</div>
+      <p class="specimen-lines"><b>VELLUM · CHAPTER 12</b>
+Position     end of ch. 11, 41,208 words
+Promises     <span class="gate">P07 open · due ch. 14</span>
+Questions    Q03 answered ch. 11
+Cast         Mara (present) · Iles (absent)
+Knowledge    Iles does not know the letter
+Props        signet ring — Mara
+Clock        Day 9, evening
+Next         ch. 12 · 3 beats · 2,400 words
+<b>Gates</b>
+Outline      <span class="ok">approved · ch. 12</span>
+Blind        <span class="ok">n/a · not pivotal</span>
+Beta         pending export</p>
+      <p class="specimen-note">Rebuilt mechanically, never hand-edited. Every session begins here.</p>
+    </aside>
+
+    <div class="hero-meta" aria-label="What ships in the plugin">
+      <div><span class="num">8</span><span class="lbl">Commands</span></div>
+      <div><span class="num">16</span><span class="lbl">Agents</span></div>
+      <div><span class="num">34</span><span class="lbl">Skills</span></div>
+      <div><span class="num">7</span><span class="lbl">Hooks</span></div>
+      <div><span class="num">0</span><span class="lbl">Runtime dependencies</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="why">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Why Vellum</p>
+        <h2>Long fiction is where workflows fall apart.</h2>
+      </div>
+      <p>Drafts drift toward the statistical average. Critique leaks into drafting, and everything starts flattering itself. Continuity dies at context compaction, somewhere around chapter nine. “Please be consistent” is a wish, not a mechanism.</p>
+    </div>
+
+    <div class="highlights">
+      <article class="highlight">
+        <span class="kicker">Evidence, not claims</span>
+        <h3>Gates read from disk</h3>
+        <p>An agent can <em>say</em> the outline was approved. Gate 1 checks the outline file's frontmatter. Claims do not unblock prose; artifacts do.</p>
+      </article>
+      <article class="highlight">
+        <span class="kicker">Stance isolation</span>
+        <h3>Critique never shares a context with drafting</h3>
+        <p>The writer cannot read the critiques. The critics cannot write prose. The coordinator owns the gates from artifacts only.</p>
+      </article>
+      <article class="highlight">
+        <span class="kicker">Deterministic engine</span>
+        <h3>The boring checks run in Python, not tokens</h3>
+        <p>Dead characters reappearing, promises out of order, props teleporting, knowledge arriving before its chapter — a stdlib-only engine checks what a hash already knows.</p>
+      </article>
+      <article class="highlight">
+        <span class="kicker">Continuity across months</span>
+        <h3>State survives the session</h3>
+        <p>A fixed one-screen state card, rebuilt mechanically and printed at every session start. Put the manuscript down for a month; pick the thread back up in one read.</p>
+      </article>
+      <article class="highlight">
+        <span class="kicker">Author authority</span>
+        <h3>You are the editor-in-chief</h3>
+        <p>Call a finding intentional and it is recorded as an exemption in your own words, never re-raised. If the underlying fact changes, it re-arms exactly once.</p>
+      </article>
+      <article class="highlight">
+        <span class="kicker">Quiet by default</span>
+        <h3>Advisory unless it matters</h3>
+        <p>Prose tells, continuity lints, voice drift: they surface only when they have something to say, and stay silent when clean.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="gates">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">The gate model</p>
+        <h2>Three hard gates. Exactly three.</h2>
+      </div>
+      <p>Each gate reads its artifact from disk — never a claim from chat. Predicates fail open on genuine uncertainty: a missing Python runtime can never mis-block you. The one deliberate exception is gate-input protection, which fails closed when it cannot verify session context.</p>
+    </div>
+
+    <div class="gates">
+      <article class="gate">
+        <span class="gate-num" aria-hidden="true">I</span>
+        <h3>Outline before prose</h3>
+        <p>Any write into <code>manuscript/chapters/</code> requires an author-approved outline. Enforced by hooks on Write and Edit <em>and</em> on Bash: redirection, heredocs, <code>sed -i</code>, and copy-laundering are all checked.</p>
+        <p class="artifact"><b>Satisfied by</b>work/outline/chapter-NN.md · approved: true · state check clean</p>
+      </article>
+      <article class="gate">
+        <span class="gate-num" aria-hidden="true">II</span>
+        <h3>The blind reader</h3>
+        <p>A chapter you flag <code>pivotal: true</code> cannot be accepted without a verdict from an agent that saw the chapter and the previous tail — and nothing else. No outline, no plan, no context to be fooled by.</p>
+        <p class="artifact"><b>Satisfied by</b>work/critique-reports/blind-chapter-NN.md · verdict ≠ LOST · self-recorded run stamp</p>
+      </article>
+      <article class="gate">
+        <span class="gate-num" aria-hidden="true">III</span>
+        <h3>Beta reader before export</h3>
+        <p>Export waits for a PASS from the four-reader beta protocol: every axis at least 7, mean at least 7.5, no put-down point in chapters 1–3. The engine enforces the threshold; the muse does not get a vote.</p>
+        <p class="artifact"><b>Satisfied by</b>work/critique-reports/readiness-report.md · verdict: PASS</p>
+      </article>
+    </div>
+
+    <p class="measure muted" style="margin-top:1.6rem">Everything else is advisory and silent when clean: the post-write prose net, cold-read BLOCKER issues, the disruptor lane, the persona panel. Two further gates — <code>voice_debt_gate</code> and <code>stop_gate</code> — ship off by default.</p>
+  </div>
+</section>
+
+<section class="section" id="inside">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Inside the plugin</p>
+        <h2>An editorial desk, not a chat window.</h2>
+      </div>
+      <p>You talk to the muse. The muse routes isolated specialists. The specialists use the engine and the skills. Hooks enforce the rules no one can talk their way around.</p>
+    </div>
+
+    <div class="figures">
+      <figure>
+        <a class="shot" href="/assets/screenshots/home.webp"><img src="/assets/screenshots/home.webp" alt="The Vellum site home page: a parchment-coloured editorial page with the headline 'The novel is long. The machinery should hold.' and a specimen state card." width="1440" height="1000" loading="lazy"></a>
+        <figcaption><b>Fig. 1</b> — The daily surface: one command, three gates, and the state card that puts you back at the desk.</figcaption>
+      </figure>
+      <figure>
+        <a class="shot" href="/assets/screenshots/reference.webp"><img src="/assets/screenshots/reference.webp" alt="The generated reference page listing Vellum agents, their model tiers, and the skills each loads." width="1440" height="1000" loading="lazy"></a>
+        <figcaption><b>Fig. 2</b> — A reference generated from the repository itself: 16 agents, 8 commands, 34 skills.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="quickstart">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">First session</p>
+        <h2>From an empty folder to a chapter.</h2>
+      </div>
+      <p>No Node, no pip, no WSL, no build step. You need Claude Code, Git (the hooks run under its bundled bash), and a Python ≥ 3.8 interpreter on PATH.</p>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <pre><code><span class="c"># in Claude Code</span>
+/plugin marketplace add FiredMosquito831/my-writing-companion
+/plugin install vellum@my-writing-companion</code></pre>
+        <pre><code><span class="c"># in your novel folder</span>
+/vellum:init
+/vellum:status
+/vellum:write-chapter next</code></pre>
+      </div>
+      <div class="measure">
+        <p><strong>Setup interviews you</strong> — genre, POV, progress, and three to five samples of your own prose. Those samples become the measured voice baseline. The engine is copied into your project and the first <code>state rebuild</code> runs for you.</p>
+        <p><strong>The chapter loop</strong> then runs outline → your approval → draft → critique → acceptance → knowledge capture. Interrupt anywhere; the state card carries resume. Only you set the <code>pivotal</code> flag, and only you accept a chapter.</p>
+        <p><a class="textlink" href="/install.html">The full install and quickstart →</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="architecture">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Architecture</p>
+        <h2>Four layers, deliberately separated.</h2>
+      </div>
+      <p>The deterministic engine, the hooks, the agents, and the skills each own a different kind of decision. None of them is asked to do another's job.</p>
+    </div>
+
+    <div class="grid-3">
+      <article class="card">
+        <span class="kicker muted">01</span>
+        <h3>The engine</h3>
+        <p><code>scripts/vellum</code> and <code>scripts/vellum_lib/</code>. Python ≥ 3.8, stdlib only. State rebuild and check, ledger continuity, word bands, measured style statistics, context packing, exemptions, and export — markdown bundle and a stdlib EPUB. Copied into your novel repo so it runs from the project root.</p>
+      </article>
+      <article class="card">
+        <span class="kicker muted">02</span>
+        <h3>The hooks</h3>
+        <p>Harness-enforced: the outline gate on both write paths, the advisory post-write prose net, and the session lifecycle — state card on start, snapshot before compact, pending-capture reminder on stop, mechanical close-out when the writer finishes.</p>
+      </article>
+      <article class="card">
+        <span class="kicker muted">03</span>
+        <h3>The agents</h3>
+        <p>16 specialists, 11 on Opus and 5 on Sonnet. Critics and readers are read-only by frontmatter; the writer may write only under <code>manuscript/</code> and <code>work/drafts/</code>. Critique, drafting, and memory capture never share a context.</p>
+      </article>
+    </div>
+
+    <p class="measure" style="margin-top:1.6rem">The fourth layer is the methodology: 34 skills whose resources load on demand — craft references, ledger schemas, gate rubrics, the cold-read protocol, voice work, and the series operator's manual. <a class="textlink" href="/how-it-works.html">Read the architecture in full →</a></p>
+  </div>
+</section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <span class="brand-word">Vellum</span>
+          <p>One command for the chapter loop. Three hard gates. Everything else advisory — and silent when clean.</p>
+          <p><a href="https://github.com/FiredMosquito831/my-writing-companion">github.com/FiredMosquito831/my-writing-companion</a></p>
+        </div>
+        <div class="footer-col">
+          <h4>The site</h4>
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/how-it-works.html">How it works</a></li>
+            <li><a href="/install.html">Install</a></li>
+            <li><a href="/reference.html">Reference</a></li>
+            <li><a href="/series.html">Series layer</a></li>
+            <li><a href="/credits.html">Credits</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Install</h4>
+          <ul>
+            <li><a href="/install.html">Install &amp; quickstart</a></li>
+            <li><a href="/reference.html">Command reference</a></li>
+            <li><a href="https://github.com/FiredMosquito831/my-writing-companion#readme">README</a></li>
+            <li><a href="https://github.com/FiredMosquito831/my-writing-companion/blob/main/TUTORIAL.md">Tutorial</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Documents</h4>
+          <ul>
+            <li><a href="https://github.com/FiredMosquito831/my-writing-companion/blob/main/DESIGN.md">Design spec</a></li>
+            <li><a href="https://github.com/FiredMosquito831/my-writing-companion/blob/main/VALIDATION.md">Validation record</a></li>
+            <li><a href="https://github.com/FiredMosquito831/my-writing-companion/blob/main/ATTRIBUTION.md">Attribution</a></li>
+            <li><a href="https://github.com/FiredMosquito831/my-writing-companion/blob/main/LICENSE">License</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span><span class="fleuron">❦</span> Vellum v0.2.0. Apache-2.0, inherited from the base fork.</span>
+        <span>Written for <a href="https://claude.com/claude-code">Claude Code</a>. Engine: Python ≥ 3.8, stdlib only.</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vellum reference — 8 commands, 16 agents, 34 skills</title>
+  <meta name="description" content="The complete generated reference for Vellum: every slash command, all sixteen agents with their model tiers, all thirty-four skills, and the seven hooks, derived from the repository&#39;s frontmatter.">
+  <meta name="keywords" content="Vellum commands, Claude Code agents, writing skills reference, model tiers, hooks">
+  <meta name="author" content="FiredMosquito831">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <link rel="canonical" href="https://vellum.danubelabs.net/reference.html">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Vellum">
+  <meta property="og:locale" content="en_GB">
+  <meta property="og:title" content="Vellum reference — 8 commands, 16 agents, 34 skills">
+  <meta property="og:description" content="The complete generated reference for Vellum: every slash command, all sixteen agents with their model tiers, all thirty-four skills, and the seven hooks, derived from the repository&#39;s frontmatter.">
+  <meta property="og:url" content="https://vellum.danubelabs.net/reference.html">
+  <meta property="og:image" content="https://vellum.danubelabs.net/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Vellum — a working novelist's daily tool for Claude Code">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Vellum reference — 8 commands, 16 agents, 34 skills">
+  <meta name="twitter:description" content="The complete generated reference for Vellum: every slash command, all sixteen agents with their model tiers, all thirty-four skills, and the seven hooks, derived from the repository&#39;s frontmatter.">
+  <meta name="twitter:image" content="https://vellum.danubelabs.net/og.png">
+  <meta name="twitter:image:alt" content="Vellum — a working novelist's daily tool for Claude Code">
+
+  <meta name="theme-color" content="#6c1d24">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/assets/fonts/cormorant-garamond-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/eb-garamond-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/css/site.css">
+  <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@id": "https://vellum.danubelabs.net/#website", "@type": "WebSite", "description": "Vellum is a working novelist\u0027s daily tool for Claude Code: one command for the chapter loop, three hard gates, and an advisory layer that stays silent when clean.", "inLanguage": "en", "name": "Vellum", "url": "https://vellum.danubelabs.net/"}, {"@id": "https://vellum.danubelabs.net/reference.html", "@type": "WebPage", "about": {"@id": "https://vellum.danubelabs.net/#software"}, "description": "The complete generated reference for Vellum: every slash command, all sixteen agents with their model tiers, all thirty-four skills, and the seven hooks, derived from the repository\u0027s frontmatter.", "isPartOf": {"@id": "https://vellum.danubelabs.net/#website"}, "name": "Vellum reference \u2014 8 commands, 16 agents, 34 skills", "url": "https://vellum.danubelabs.net/reference.html"}]}</script>
+</head>
+<body class="page-reference">
+  <a class="skip" href="#main">Skip to the text</a>
+
+  <header class="masthead">
+    <div class="topline">
+      <div class="wrap">
+        <span>A Claude Code plugin for novelists</span>
+        <span class="topline-extra">Version 0.2.0 · Apache-2.0 · Windows &amp; Linux</span>
+      </div>
+    </div>
+    <div class="wrap brand-row">
+      <a class="brand" href="/" aria-label="Vellum home">
+        <span class="brand-mark" aria-hidden="true">V</span>
+        <span>
+          <span class="brand-word">Vellum</span>
+          <span class="brand-sub">A novelist's daily tool</span>
+        </span>
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a href="/">Home</a>
+        <a href="/how-it-works.html">How it works</a>
+        <a href="/install.html">Install</a>
+        <a href="/reference.html" aria-current="page">Reference</a>
+        <a href="/series.html">Series layer</a>
+        <a href="/credits.html">Credits</a>
+        <a class="nav-repo" href="https://github.com/FiredMosquito831/my-writing-companion" rel="noopener">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+<header class="page-head">
+  <div class="wrap">
+    <p class="eyebrow">Reference</p>
+    <h1>Everything in the plugin, generated from the plugin.</h1>
+    <p class="lede">These entries are read from the repository's own frontmatter at build time — names, descriptions, model tiers, and skill loads. If the plugin changes, this page changes with it.</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="ref-intro" aria-label="Plugin totals">
+    <div><span class="num">8</span><span class="lbl">Slash commands</span></div>
+    <div><span class="num">16</span><span class="lbl">Agents</span></div>
+    <div><span class="num">34</span><span class="lbl">Skills</span></div>
+    <div><span class="num">7</span><span class="lbl">Hooks</span></div>
+  </div>
+
+  <nav class="toc" aria-label="On this page">
+    <a href="#commands">Commands</a>
+    <a href="#agents">Agents</a>
+    <a href="#skills">Skills</a>
+    <a href="#hooks">Hooks</a>
+  </nav>
+</div>
+
+<article class="article">
+  <div class="wrap">
+
+    <section id="commands">
+      <h2>Slash commands</h2>
+      <p>The author-facing surface. Each command dispatches into the muse, a skill, or the engine; none of them hides a gate.</p>
+      <div class="table-scroll">
+        <table class="cmd-table">
+          <thead><tr><th scope="col">Command</th><th scope="col">Purpose</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>/vellum:init</td>
+              <td><strong>Set up a novel project.</strong> Set up a creative-writing project for this plugin — run the project-setup skill (interview, kb layout, CLAUDE.md, initial state rebuild).</td>
+            </tr>
+            <tr>
+              <td>/vellum:write-chapter</td>
+              <td><strong>Write a chapter.</strong> Run the chapter loop — outline, author approval, draft, critique, acceptance, capture.</td>
+            </tr>
+            <tr>
+              <td>/vellum:status</td>
+              <td><strong>State card &amp; gate status.</strong> Print the state card, gate statuses, and open findings summary.</td>
+            </tr>
+            <tr>
+              <td>/vellum:cold-read</td>
+              <td><strong>Cold read.</strong> Set up work/cold-reads/&lt;YYYY-MM&gt; from templates/cold-read and run cold-read batches.</td>
+            </tr>
+            <tr>
+              <td>/vellum:retune</td>
+              <td><strong>Retune the voice.</strong> Run the voice retune protocol from a raw author sample.</td>
+            </tr>
+            <tr>
+              <td>/vellum:export</td>
+              <td><strong>Export the manuscript.</strong> Evaluate readiness, then build the export bundle.</td>
+            </tr>
+            <tr>
+              <td>/vellum:dismiss</td>
+              <td><strong>Dismiss a finding.</strong> Record an author dismissal of a finding as an exemption (requires the reason in the author own words).</td>
+            </tr>
+            <tr>
+              <td>/vellum:series</td>
+              <td><strong>Operate the series layer.</strong> Operate the library/series layer — link books, capture series canon, run retcon checks, plan and apply retcons.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="agents">
+      <h2>Agents</h2>
+      <p>16 specialists in isolated stances. 11 run on Opus, where judgment or prose quality carries the work; 5 run on Sonnet, where retrieval and mechanical synthesis carry it. Critics and readers are read-only by frontmatter; the writer's write scope is the manuscript and drafts.</p>
+
+      <div class="agent-grid" style="margin-top:2rem">
+        <article class="agent">
+          <div class="agent-head">
+            <h3>@muse</h3>
+            <span class="tag tag--opus">opus</span>
+          </div>
+          <p>Author-facing creative partner for all story work, from planning through production handoff; enforces the three hard gates and routes all specialist work.</p>
+          <p class="loads"><strong>Loads:</strong> story-planning, writing-principles, intent-modeling, llm-writing, writing-staffing, creative-writing-modes, creative-writing-craft, story-review, story-memory, story-ledgers, gates, demolition, reader-sim, character-sim, shared-dao, grill-with-docs, structured-artifact, series</p>
+        </article>
+        <article class="agent">
+          <div class="agent-head">
+            <h3>@outliner</h3>
+            <span class="tag tag--sonnet">sonnet</span>
+          </div>
+          <p>Sequences confirmed direction into arc, chapter, and beat-level outlines.</p>
+          <p class="loads"><strong>Loads:</strong> story-planning, story-memory, md-validation</p>
+        </article>
+        <article class="agent">
+          <div class="agent-head">
+            <h3>@writer</h3>
+            <span class="tag tag--opus">opus</span>
+          </div>
+          <p>Production prose from scene briefs, revision notes, and style references; uses progressive mode guidance for fresh drafts, revisions, bridges, alternate takes, and line polish.</p>
+          <p class="loads"><strong>Loads:</strong> creative-writing-modes, creative-writing-craft, style-guardrails, voice, writing-principles, story-memory, llm-writing</p>
+        </article>
+        <article class="agent">
+          <div class="agent-head">
+            <h3>@critic</h3>
+            <span class="tag tag--opus">opus</span>
+          </div>
+          <p>Deep adversarial critique of a draft, one focus area at a time.</p>
+          <p class="loads"><strong>Loads:</strong> story-review, gates, style-guardrails, writing-principles, llm-writing, story-memory</p>
+        </article>
+        <article class="agent">
+          <div class="agent-head">
+            <h3>@editor</h3>
+            <span class="tag tag--opus">opus</span>
+          </div>
+          <p>Holistic third-party book editor pass across narrative structure, voice, line quality, copy consistency, and proofreading priority.</p>
+          <p class="loads"><strong>Loads:</strong> story-review, gates, style-guardrails, writing-principles, creative-writing-craft, llm-writing, story-memory</p>
+        </article>
+        <article class="agent">
+          <div class="agent-head">
+            <h3>@blind-reader</h3>
+            <span class="tag tag--opus">opus</span>
+          </div>
+          <p>Naive-eyes verdict on a pivotal chapter; knows nothing of the plan.</p>
+          <p class="loads"><strong>Loads:</strong> gates</p>
+        </article>
+        <article class="agent">
+          <div class="agent-head">
+            <h3>@beta-reader</h3>
+            <span class="tag tag--opus">opus</span>
+          </div>
+          <p>Four-reader full-manuscript readiness read before export.</p>
+          <p class="loads"><strong>Loads:</strong> gates, creative-writing-craft</p>
+        </article>
+        <article class="agent">
+          <div class="agent-head">
+            <h3>@cold-reader</h3>
+            <span class="tag tag--sonnet">sonnet</span>
+          </div>
+          <p>Executes one cold-read batch; assessment only, never edits.</p>
+          <p class="loads"><strong>Loads:</strong> cold-read, gates</p>
+        </article>
+        <article class="agent">
+          <div class="agent-head">
+            <h3>@continuity-checker</h3>
+            <span class="tag tag--sonnet">sonnet</span>
+          </div>
+          <p>Cross-references content against established canon for contradictions.</p>
+          <p class="loads"><strong>Loads:</strong> story-review, md-validation, shared-dao, story-memory</p>
+        </article>
+        <article class="agent">
+          <div class="agent-head">
+            <h3>@character-sim</h3>
+            <span class="tag tag--opus">opus</span>
+          </div>
+          <p>In-character conversation for voice discovery and relationship testing.</p>
+          <p class="loads"><strong>Loads:</strong> character-sim, writing-principles, llm-writing, story-memory</p>
+        </article>
+        <article class="agent">
+          <div class="agent-head">
+            <h3>@reader-sim</h3>
+            <span class="tag tag--opus">opus</span>
+          </div>
+          <p>Experiential reader response from a caller-specified reader persona; pass the persona, draft, and knowledge boundary.</p>
+          <p class="loads"><strong>Loads:</strong> reader-sim, writing-principles, llm-writing</p>
+        </article>
+        <article class="agent">
+          <div class="agent-head">
+            <h3>@disruptor</h3>
+            <span class="tag tag--opus">opus</span>
+          </div>
+          <p>Controlled-wildness proposals for flat chapters; proposal-only.</p>
+          <p class="loads"><strong>Loads:</strong> creative-writing-craft, story-planning</p>
+        </article>
+        <article class="agent">
+          <div class="agent-head">
+            <h3>@brainstormer</h3>
+            <span class="tag tag--opus">opus</span>
+          </div>
+          <p>Creative option generation for a scoped question or angle.</p>
+          <p class="loads"><strong>Loads:</strong> story-planning, story-memory, intent-modeling, llm-writing</p>
+        </article>
+        <article class="agent">
+          <div class="agent-head">
+            <h3>@style-creator</h3>
+            <span class="tag tag--opus">opus</span>
+          </div>
+          <p>Analyzes prose samples to produce style reference files for the project&#39;s voice.</p>
+          <p class="loads"><strong>Loads:</strong> creative-writing-craft, style-guardrails, voice, writing-principles, llm-writing, story-memory</p>
+        </article>
+        <article class="agent">
+          <div class="agent-head">
+            <h3>@kb-lead</h3>
+            <span class="tag tag--sonnet">sonnet</span>
+          </div>
+          <p>Knowledge-capture worker; writes only under kb/ and runs engine checks after updates.</p>
+          <p class="loads"><strong>Loads:</strong> story-memory, story-ledgers, series, series-bible</p>
+        </article>
+        <article class="agent">
+          <div class="agent-head">
+            <h3>@web-researcher</h3>
+            <span class="tag tag--sonnet">sonnet</span>
+          </div>
+          <p>Web research for fiction — primary sources, reference works, cultural detail, domain expertise, and community discussion.</p>
+          <p class="loads"><strong>Loads:</strong> creative-research</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="skills">
+      <h2>Skills</h2>
+      <p>34 skills carry the methodology. They are loaded on demand, so a specialist gets the craft, schemas, or rubric it needs without carrying the rest.</p>
+      <div class="skill-group">
+        <h3>Drafting &amp; craft <span class="count">8</span></h3>
+        <p>The how-to-write layer: prose technique, production modes, reader simulation, and the craft corpus the writer loads on demand.</p>
+        <div class="skill">
+          <h4>creative-writing-craft</h4>
+          <p>Craft references for writing fiction well: prose, scenes, style, voice, and genre/page-level technique. Load when a writer, critic, or muse needs how-to-write guidance rather than a production mode.</p>
+        </div>
+        <div class="skill">
+          <h4>creative-writing-modes</h4>
+          <p>Creative-writing addendum to /llm-writing. Load when putting prose on the page: draft, revise, bridge, vary, or polish.</p>
+        </div>
+        <div class="skill">
+          <h4>creative-writing-muse</h4>
+          <p>Load when no subagents are available and one agent must plan, draft, critique, research, and capture memory by switching stances.</p>
+        </div>
+        <div class="skill">
+          <h4>llm-writing</h4>
+          <p>Load before writing or revising human-facing text. Choose words deliberately, ground the piece in the reader&#39;s context, and remove default LLM phrasing before the final draft.</p>
+        </div>
+        <div class="skill">
+          <h4>writing-principles</h4>
+          <p>What fiction readers want (reader reward channels) and the specific ways LLM training damages them. Load when drafting prose, critiquing, or diagnosing why a passage feels flat.</p>
+        </div>
+        <div class="skill">
+          <h4>writing-staffing</h4>
+          <p>Dispatch reference for composing writing teams. Teaches which skills to load for each subagent, which resources to reference, and when to fan out versus run parallel lanes. Load when staffing a workflow.</p>
+        </div>
+        <div class="skill">
+          <h4>character-sim</h4>
+          <p>Speak as a specified character from their current knowledge, voice, and emotional state. Use for skill-only workflows that need in-character conversation, voice discovery, or relationship pressure tests.</p>
+        </div>
+        <div class="skill">
+          <h4>reader-sim</h4>
+          <p>Read as a specified first-time reader persona and report the felt experience. Use for skill-only workflows when a draft needs persona-bound reader-response signal instead of analytical critique.</p>
+        </div>
+      </div>
+      <div class="skill-group">
+        <h3>Planning &amp; review <span class="count">5</span></h3>
+        <p>Structure before prose, and the adversarial passes that earn their keep.</p>
+        <div class="skill">
+          <h4>story-planning</h4>
+          <p>Planning work before prose: creative direction, story-planning, outlining, and story architecture. Load when deciding what should happen or how a story should be structured.</p>
+        </div>
+        <div class="skill">
+          <h4>story-review</h4>
+          <p>Review work after prose exists: editorial review, craft critique, continuity/voice review, copyediting, proofreading, and synthesis of reader-sim signal. Load when diagnosing a draft rather than rewriting it.</p>
+        </div>
+        <div class="skill">
+          <h4>demolition</h4>
+          <p>Load when the author invokes demolition on a chapter draft, or when muse offers it before marking a chapter final. The demolition skill is hostile critical analysis applied to fiction: it finds every vulnerability in a chapter — one at a time, never softened, no solutions during demolition — and logs each resolved/deferred/accepted issue in the chapter&#39;s Demolition Log. It is the strongest pre-final check; the author may decline it, and declining is recorded.</p>
+        </div>
+        <div class="skill">
+          <h4>grill-with-docs</h4>
+          <p>Use when challenging a plan — grills the author against documented decisions and sharpens terminology.</p>
+        </div>
+        <div class="skill">
+          <h4>zoom-out</h4>
+          <p>Use when orienting in an unfamiliar area — fans out exploration across structure, knowledge, and history, then synthesizes one orientation map.</p>
+        </div>
+      </div>
+      <div class="skill-group">
+        <h3>Memory &amp; canon <span class="count">9</span></h3>
+        <p>The knowledge base, its ledgers, and the rules for keeping it honest.</p>
+        <div class="skill">
+          <h4>kb-management</h4>
+          <p>Maintaining the story knowledge base: creating, updating, and organizing wiki-style reference pages in kb/. Use when capturing finalized story knowledge, updating character profiles, documenting world mechanics, or restructuring the kb.</p>
+        </div>
+        <div class="skill">
+          <h4>kb-integrity</h4>
+          <p>Load when a vellum check failed, or when muse routes integrity work. The kb-integrity skill teaches how to run the deterministic engine (bible validate, ledger check, wordcount, state check, knowledge --as-of), interpret their findings, apply the exemption protocol, and repair derived files. It is the operator&#39;s manual for the mechanical half of the continuity layer — the cold read and the critics find what these linters cannot.</p>
+        </div>
+        <div class="skill">
+          <h4>knowledge-layers</h4>
+          <p>Use when deciding where knowledge goes or reading/writing durable docs: AGENTS.md, .context/, KB, docs/, and work directories.</p>
+        </div>
+        <div class="skill">
+          <h4>story-ledgers</h4>
+          <p>Load when planning chapters, capturing what a chapter changed, or answering what is still open or who knows what. The story-ledgers skill owns the deterministic continuity layer: the ledger file schemas (promises, questions, knowledge, props, characters, clock), the fixed-section state card, and the chapter-transaction close-out. It is the reference the engine&#39;s ledger/bible/wordcount checks validate against — and the source the state card is derived from.</p>
+        </div>
+        <div class="skill">
+          <h4>story-memory</h4>
+          <p>Creative-writing domain knowledge for durable story state. Load when preserving or retrieving project memory — fact extraction, context scoping, reference writing, artifact layout, and issue tracking. If you are a knowledge agent such as kb-lead, load this for the fiction-specific categories and conventions your general methodology doesn&#39;t cover.</p>
+        </div>
+        <div class="skill">
+          <h4>shared-dao</h4>
+          <p>Shared vocabulary for creative writing projects. Load when establishing canonical story terms, resolving ambiguous names, checking term consistency, or deciding where vocabulary belongs in kb/.</p>
+        </div>
+        <div class="skill">
+          <h4>information-hierarchy</h4>
+          <p>Load for large human-facing outputs: reports, docs, multi-section explanations, artifacts. Choose the right form for each beat (prose, diagram, table, mockup) and put the answer first, depth behind it. If the medium allows, use progressive disclosure.</p>
+        </div>
+        <div class="skill">
+          <h4>qi-layer</h4>
+          <p>Use when writing or maintaining AGENTS.md, .context/CONTEXT.md, or CLAUDE.md mirrors: keep intent docs minimal and load-bearing.</p>
+        </div>
+        <div class="skill">
+          <h4>intent-modeling</h4>
+          <p>Use before acting on human instructions: separate what they said from what they meant.</p>
+        </div>
+      </div>
+      <div class="skill-group">
+        <h3>Voice &amp; style <span class="count">2</span></h3>
+        <p>The author&#39;s measured voice, and the guardrails that never flatten it.</p>
+        <div class="skill">
+          <h4>voice</h4>
+          <p>Load for project-setup voice capture, every drift_interval chapters, or when the author says the prose does not sound like them. The voice skill owns the voice lifecycle: capture, measured profile, exemplars/anti-exemplars, drift checks, the blind-tag falsification test, and retune. It is the strongest signal the style-creator and critics have — and the reference the mechanical net defers to.</p>
+        </div>
+        <div class="skill">
+          <h4>style-guardrails</h4>
+          <p>Load for the writer and critics before drafting or critiquing prose; also drives the post-write net. The fiction-specific anti-slop reference: tiered word tables, structural caps, smell tests, and the carve-out filter that keeps the mechanical net from flattening voice. Load whenever prose is being produced, reviewed, or scored.</p>
+        </div>
+      </div>
+      <div class="skill-group">
+        <h3>Gates, readers &amp; production <span class="count">7</span></h3>
+        <p>The three hard gates, the cover-to-cover read, setup, and export.</p>
+        <div class="skill">
+          <h4>gates</h4>
+          <p>Load when muse accepts a pivotal chapter, before export, or for any scoring task. The gates skill owns the shared quality rubric, the export-readiness checklist, the shared finding schema, and the numeric genre profiles. Every critic and gate-owning agent loads this so verdicts are consistent and criteria are referenced, never invented per-agent.</p>
+        </div>
+        <div class="skill">
+          <h4>cold-read</h4>
+          <p>Load for /vellum:cold-read, after every major editorial program, and before export. The cold-read skill owns the cover-to-cover cold-read protocol: the reader charter, the rolling ledger, the append-only issue log, and the batching/orchestration model. It finds the accumulating-memory defect classes (clock drift, cross-chapter state contradictions, prop custody, promise bookkeeping, knowledge-state slips) that no scanner, chapter reviewer, or continuity query can see.</p>
+        </div>
+        <div class="skill">
+          <h4>project-setup</h4>
+          <p>One-time project setup for creative writing. Interviews you about your project, collects writing samples, proposes kb structure, and creates CLAUDE.md with project conventions.</p>
+        </div>
+        <div class="skill">
+          <h4>export</h4>
+          <p>Load for /vellum:export. The export skill is the operator&#39;s manual for building the final manuscript: it runs the readiness gate, interprets a failure as a prioritized fix list, runs the deterministic build on PASS, and explains the manifest and the pandoc fallback. The engine implementation lives in scripts/vellum_lib/export.py (Workstream B); this skill is what the operator (muse) follows.</p>
+        </div>
+        <div class="skill">
+          <h4>md-validation</h4>
+          <p>Use when validating markdown links or Mermaid diagrams.</p>
+        </div>
+        <div class="skill">
+          <h4>structured-artifact</h4>
+          <p>Load when building a static HTML artifact — single page or multi-page site — to make structured information explorable through layout and navigation.</p>
+        </div>
+        <div class="skill">
+          <h4>reflect</h4>
+          <p>User-invoked pause before reporting to check intent vs literal completion, surface adjacent wins, and route knowledge capture.</p>
+        </div>
+      </div>
+      <div class="skill-group">
+        <h3>Series layer <span class="count">2</span></h3>
+        <p>Optional multi-book canon: the operator&#39;s manual and its data dialect.</p>
+        <div class="skill">
+          <h4>series</h4>
+          <p>Load for any series-layer workflow: linking a book to a library, bootstrap and retcon lifecycle, the retcon detection catalog, the do-not-re-explain register, handoff generation, and the series state card. Owns the `library` subcommand dispatch surface (§8) and is the operator&#39;s manual for the series layer. Does NOT add a fourth gate; findings are advisory-only.</p>
+        </div>
+        <div class="skill">
+          <h4>series-bible</h4>
+          <p>Schemas and conventions for the series bible (`series/bible.json`) and the rest of the library layer&#39;s JSON state, plus how book kb maintenance maps onto series canon. Load when inspecting or planning changes to bible entities and fields, deciding between a `value` and a `by-book` encoding, setting `scope` or `iron`, resolving what a field&#39;s effective value is at a given book ordinal, choosing or checking `series-id:` join keys on kb entity frontmatter, routing captured story knowledge into series scope, or writing kb pages about series-shared characters, props, promises, questions, and world knowledge. Use alongside the series skill, which owns the `library` command surface; this skill owns the data dialect. Findings are advisory-only — the series layer never adds a fourth gate.</p>
+        </div>
+      </div>
+      <div class="skill-group">
+        <h3>Research <span class="count">1</span></h3>
+        <p>Factual grounding the writer does not have to invent.</p>
+        <div class="skill">
+          <h4>creative-research</h4>
+          <p>Load when a story needs factual grounding the writer doesn&#39;t have: historical detail, cultural texture, domain accuracy, or how other authors handled similar material. Pass the question and story context; returns a sourced report the writer can draw from.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="hooks">
+      <h2>Hooks</h2>
+      <p>Seven scripts across six lifecycle events. Only the two outline-gate paths block by default.</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th scope="col">Event</th><th scope="col">Matcher</th><th scope="col">Script</th><th scope="col">Mode</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>PreToolUse</td>
+              <td>Write | Edit | MultiEdit</td>
+              <td><code>guard-outline-before-prose.sh</code></td>
+              <td><span class="tag tag--block">Blocking</span></td>
+            </tr>
+            <tr>
+              <td>PreToolUse</td>
+              <td>Bash</td>
+              <td><code>guard-bash-prose-writes.sh</code></td>
+              <td><span class="tag tag--block">Blocking</span></td>
+            </tr>
+            <tr>
+              <td>PostToolUse</td>
+              <td>Write | Edit | MultiEdit</td>
+              <td><code>check-prose-after-write.sh</code></td>
+              <td><span class="tag">Advisory</span></td>
+            </tr>
+            <tr>
+              <td>SessionStart</td>
+              <td>startup | resume | clear | compact</td>
+              <td><code>session-start.sh</code></td>
+              <td><span class="tag">Advisory</span></td>
+            </tr>
+            <tr>
+              <td>PreCompact</td>
+              <td>—</td>
+              <td><code>pre-compact.sh</code></td>
+              <td><span class="tag">Advisory</span></td>
+            </tr>
+            <tr>
+              <td>Stop</td>
+              <td>—</td>
+              <td><code>session-stop.sh</code></td>
+              <td><span class="tag">Opt-in gate</span></td>
+            </tr>
+            <tr>
+              <td>SubagentStop</td>
+              <td>writer</td>
+              <td><code>chapter-maintenance.sh</code></td>
+              <td><span class="tag">Advisory</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <figure style="margin-top:2.5rem">
+        <a class="shot" href="/assets/screenshots/reference.webp"><img src="/assets/screenshots/reference.webp" alt="Vellum reference page showing the agent grid with model tier badges." width="1440" height="1000" loading="lazy"></a>
+        <figcaption><b>Fig. 3</b> — The reference page, generated from agent, command, and skill frontmatter.</figcaption>
+      </figure>
+    </section>
+
+  </div>
+</article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <span class="brand-word">Vellum</span>
+          <p>One command for the chapter loop. Three hard gates. Everything else advisory — and silent when clean.</p>
+          <p><a href="https://github.com/FiredMosquito831/my-writing-companion">github.com/FiredMosquito831/my-writing-companion</a></p>
+        </div>
+        <div class="footer-col">
+          <h4>The site</h4>
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/how-it-works.html">How it works</a></li>
+            <li><a href="/install.html">Install</a></li>
+            <li><a href="/reference.html">Reference</a></li>
+            <li><a href="/series.html">Series layer</a></li>
+            <li><a href="/credits.html">Credits</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Install</h4>
+          <ul>
+            <li><a href="/install.html">Install &amp; quickstart</a></li>
+            <li><a href="/reference.html">Command reference</a></li>
+            <li><a href="https://github.com/FiredMosquito831/my-writing-companion#readme">README</a></li>
+            <li><a href="https://github.com/FiredMosquito831/my-writing-companion/blob/main/TUTORIAL.md">Tutorial</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Documents</h4>
+          <ul>
+            <li><a href="https://github.com/FiredMosquito831/my-writing-companion/blob/main/DESIGN.md">Design spec</a></li>
+            <li><a href="https://github.com/FiredMosquito831/my-writing-companion/blob/main/VALIDATION.md">Validation record</a></li>
+            <li><a href="https://github.com/FiredMosquito831/my-writing-companion/blob/main/ATTRIBUTION.md">Attribution</a></li>
+            <li><a href="https://github.com/FiredMosquito831/my-writing-companion/blob/main/LICENSE">License</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span><span class="fleuron">❦</span> Vellum v0.2.0. Apache-2.0, inherited from the base fork.</span>
+        <span>Written for <a href="https://claude.com/claude-code">Claude Code</a>. Engine: Python ≥ 3.8, stdlib only.</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
